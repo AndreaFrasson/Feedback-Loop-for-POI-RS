@@ -1,0 +1,34 @@
+# dataset config : General Recommendation
+USER_ID_FIELD: usid
+ITEM_ID_FIELD: venue_id
+RATING_FIELD: rating
+TIME_FIELD: timestamp
+
+load_col:
+    inter: [user_id, item_id, rating, timestamp]
+
+user_inter_num_interval: "[10,inf)"
+item_inter_num_interval: "[10,inf)"
+val_interval:
+    rating: "[3,inf)"
+    timestamp: "[97830000, inf)"
+
+# Training and evaluation config
+epochs: 500
+train_batch_size: 4096
+eval_batch_size: 4096
+train_neg_sample_args:
+    distribution: uniform
+    sample_num: 1
+    alpha: 1.0
+    dynamic: False
+    candidate_num: 0
+eval_args:
+    group_by: user
+    order: RO
+    split: {'RS': [0.8,0.1,0.1]}
+    mode: full
+metrics: ['Recall', 'MRR', 'NDCG', 'Hit', 'Precision']
+topk: 10
+valid_metric: MRR@10
+metric_decimal_place: 4
