@@ -1,0 +1,11 @@
+model: Caser
+
+learning_rate choice [0.01,0.005,0.001,0.0005,0.0001]
+reg_weight choice [0,1e-4,1e-5]
+dropout_prob choice [0.0,0.1,0.2,0.3,0.4,0.5]
+n_v choice [2,4,6,8]
+n_h choice [4,6,8,10]
+
+train_neg_sample_args: None
+
+eval_batch_size: 4096
