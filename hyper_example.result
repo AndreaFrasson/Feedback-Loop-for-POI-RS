@@ -1,0 +1,60 @@
+dynamic:False, embedding_size:64, learning_rate:0.026893716938192213, mlp_hidden_size:[128,128], sample_num:0, train_batch_size:2048
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:96, learning_rate:0.09626579089771377, mlp_hidden_size:[64,64,64], sample_num:5, train_batch_size:2048
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:96, learning_rate:0.008378874299951997, mlp_hidden_size:[64,64,64], sample_num:0, train_batch_size:4096
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:128, learning_rate:0.011591019025650188, mlp_hidden_size:[128,128], sample_num:0, train_batch_size:2048
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:False, embedding_size:96, learning_rate:0.009567162537955394, mlp_hidden_size:[128,128], sample_num:0, train_batch_size:4096
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:64, learning_rate:0.1430983367684525, mlp_hidden_size:[128,128], sample_num:0, train_batch_size:2048
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:64, learning_rate:0.009868282609504446, mlp_hidden_size:[64,64,64], sample_num:0, train_batch_size:4096
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:128, learning_rate:0.018548646349937695, mlp_hidden_size:[64,64,64], sample_num:0, train_batch_size:4096
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:True, embedding_size:96, learning_rate:0.5692826570045784, mlp_hidden_size:[64,64,64], sample_num:1, train_batch_size:2048
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+
+dynamic:False, embedding_size:128, learning_rate:0.8433556760776124, mlp_hidden_size:[128,128], sample_num:5, train_batch_size:4096
+Valid result:
+hit@10 : 0.4663    precision@10 : 0.0466
+Test result:
+hit@10 : 0.4201    precision@10 : 0.042
+

@@ -1,4 +1,12 @@
 # Environment settings
+model: BPR
+dataset: foursquare
+data_path: /Users/andreafrasson/Desktop/tesi/Feedback-Loop-for-POI-RS
+
+seed: 1234
+reproducibility: True
+topk: 10
+use_gpu: True
 
 USER_ID_FIELD: uid
 ITEM_ID_FIELD: venue_id
@@ -7,17 +15,8 @@ TIME_FIELD: timestamp
 load_col:
     inter: [uid, venue_id, timestamp]
 
-
 # Training config
 epochs: 10
-train_batch_size: 4096
-eval_batch_size: 4096
-train_neg_sample_args:
-    distribution: uniform
-    sample_num: 1
-    alpha: 1.0
-    dynamic: False
-    candidate_num: 0
 
 # Evaluation config
 eval_args:
@@ -25,6 +24,6 @@ eval_args:
     order: TO # temporal order
     split: {'LS': 'valid_and_test'} # leave one out
     mode: full
-metrics: ['Recall', 'MRR', 'NDCG', 'Hit', 'Precision']
-valid_metric: MRR@10
+metrics: ['Hit', 'Precision']
+valid_metric: Hit@10
 metric_decimal_place: 4
