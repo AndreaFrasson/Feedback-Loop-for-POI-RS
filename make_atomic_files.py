@@ -59,6 +59,7 @@ def og_atomic_files():
     red_df[['uid:token', 'venue_id:token', 'timestamp:token']].to_csv('foursquare/foursquare.inter', index=False, sep = '\t')
     #item file for recbole
     items = red_df[['venue_id:token', 'venue_category_name:token']].drop_duplicates().sort_values(by=['venue_id:token'])
+    items['venue_category_name:token'] = items['venue_category_name:token'].astype('int')
     items.to_csv('foursquare/foursquare.item', index = False, sep='\t')
     #user file
     pd.DataFrame(set(red_df['uid:token']), columns=['uid:token']).to_csv('foursquare/foursquare.user', index=False, sep = '\t')
