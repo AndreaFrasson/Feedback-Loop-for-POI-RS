@@ -1,13 +1,5 @@
 # Environment settings
 dataset: foursquare
-data_path: /Users/andreafrasson/Desktop/tesi/Feedback-Loop-for-POI-RS
-
-seed: 1234
-reproducibility: True
-topk: 10
-use_gpu: True
-save_dataset: False
-
 
 USER_ID_FIELD: uid
 ITEM_ID_FIELD: venue_id

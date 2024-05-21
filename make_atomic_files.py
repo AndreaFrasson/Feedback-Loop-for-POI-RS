@@ -36,6 +36,8 @@ def og_atomic_files():
 
     new_df = pd.DataFrame(new_df, columns=foursquare.columns)
     new_df['uid'] = new_df['uid'].astype(int)
+    new_df['venue_id'] = new_df['venue_id'].astype(int)
+    new_df['venue_category_name'] = new_df['venue_category_name'].astype(int)
 
     #timestamp
     new_df['timestamp'] = np.arange(1, 101).tolist() * len(set_uid)
