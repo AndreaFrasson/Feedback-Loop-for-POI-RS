@@ -1,5 +1,4 @@
 # Environment settings
-dataset: foursquare
 
 USER_ID_FIELD: uid
 ITEM_ID_FIELD: venue_id
@@ -7,6 +6,10 @@ TIME_FIELD: timestamp
 
 load_col:
     inter: [uid, venue_id, timestamp]
+    item: [venue_id, venue_category_name]
+
+save_dataset: False
+save_dataloaders: False
 
 # Training config
 epochs: 10

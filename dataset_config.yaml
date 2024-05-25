@@ -1,0 +1,25 @@
+# Environment settings
+USER_ID_FIELD: uid
+ITEM_ID_FIELD: venue_id
+TIME_FIELD: timestamp
+
+load_col:
+    inter: [uid, venue_id, timestamp]
+    item: [venue_id, venue_category_name]
+
+
+seed: 1234
+reproducibilty: True
+
+save_datasets: True
+save_dataloaders: True
+
+
+# Evaluation config
+eval_args:
+    group_by: user
+    order: TO # temporal order
+    split: {'RS': [8,1,1]} # no validation in the first split
+    mode: full
+
+repeatable: True
