@@ -1,2 +1,4 @@
-log_tensorboard/
+log_tensorboard/*
+saved/*
 *.pyc
+*.ipynb

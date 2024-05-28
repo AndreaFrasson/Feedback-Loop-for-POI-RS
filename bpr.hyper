@@ -5,12 +5,5 @@ embedding_size choice [64,96,128]
 mlp_hidden_size choice ['[64,64,64]','[128,128]']
 train_batch_size choice  [2048, 4096]
 
-train_neg_sample_args:
-    distribution: uniform
-    sample_num choice [0, 1, 5]
-    alpha: 1.0
-    dynamic choice [False, True]
-    candidate_num: 0
-
 
 eval_batch_size: 4096

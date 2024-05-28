@@ -25,12 +25,11 @@ def tuning(model_name, hyper_file, params_dict = {}):
             'topk': 10,
             'use_gpu': True,
             'gpu_id': '0',
-            'seed': 1234
     }
+
     config_dict.update(params_dict)
 
     def objective_function(params_dict=None, config_file_list=None):
-        k = 10
 
         config = Config(config_dict=config_dict, config_file_list=['foursquare_general.yaml'])
 
@@ -54,10 +53,10 @@ def tuning(model_name, hyper_file, params_dict = {}):
         }
 
     hp = HyperTuning(objective_function=objective_function, algo='random', early_stop=10,
-                    max_evals=100, params_file=hyper_file, fixed_config_file_list=['foursquare_general.yaml'], params_dict=config_dict)
+                max_evals=100, params_file=hyper_file, fixed_config_file_list=['foursquare_general.yaml'], params_dict=config_dict)
 
     hp.run()
-    params = hp.best_params | params_dict
+    params =  config_dict | hp.best_params
     return params
 
 
@@ -66,29 +65,7 @@ def tuning(model_name, hyper_file, params_dict = {}):
 # @input params (dict): parameters
 # @output model (): trained model
 # @output test_results (OrderedDict): Hit@10 and Precision@10 obtained in the training
-def training(model, params, train_data, valid_data):
-    k = 10
-
-    config_dict = {
-            'model': model,
-            'data_path': os.getcwd(),
-            'topk': k,
-            'use_gpu': True
-    }
-    config_dict.update(params)
-    # configurations initialization
-
-    config = Config(model=model, dataset='foursquare', config_file_list=['foursquare_general.yaml'], config_dict = config_dict)
-
-    # init random seed
-    init_seed(config['seed'], config['reproducibility'])
-
-    # dataset creating and filtering
-    #dataset = create_dataset(config)
-
-    # dataset splitting
-    #train_data, valid_data, test_data = data_preparation(config, dataset)
-
+def training(config, train_data, valid_data):
     # train the model
     model = get_model(config['model'])(config, train_data.dataset).to(config['device'])
 
@@ -98,7 +75,7 @@ def training(model, params, train_data, valid_data):
     # model training
     best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
 
-    return trainer
+    return trainer, model
 
 
 # for the interactions between users and items. Generate a matrix where the rows
@@ -162,7 +139,7 @@ def get_prediction(model, interactions, items):
     #length |items| + 1 because of the padding
 
     # get the 10 items with highest scores
-    rec_list = np.argsort(scores, axis = 1)[:, -k:]
+    rec_list = np.argsort(scores, axis = 1)[:, -k:] - 1
 
     # select one item in the list
     # id-category for POI dictionary
