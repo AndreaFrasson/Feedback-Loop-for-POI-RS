@@ -5,8 +5,8 @@ import pickle
 import os
 
 
-def preprocess():
-    np.random.seed(1234)
+def preprocess(seed = 1234):
+    np.random.seed(seed)
 
     path = os.getcwd()
     # open dataset
@@ -43,7 +43,7 @@ def preprocess():
     red_df['venue_id'] = enc.transform(red_df['venue_id'])
 
     mapping_id = dict(zip(range(len(enc.classes_)), enc.classes_))
-    with open('id_category.pkl', 'wb') as f:
+    with open('id_loc.pkl', 'wb') as f:
         pickle.dump(mapping_id, f)
 
     ### split train/valid/test dataset
@@ -71,11 +71,16 @@ def preprocess():
     items.sort_values(by = 'venue_id:token', inplace=True)
     items.to_csv('foursquare/foursquare.item', index = False, sep = ',')
 
+    mapping_cat = dict(zip(red_df['venue_id:token'], red_df['venue_category_name:token']))
+    with open('id_category.pkl', 'wb') as f:
+        pickle.dump(mapping_cat, f)
+
     #interaction
     train[['uid:token', 'venue_id:token', 'timestamp:token']].to_csv('foursquare/foursquare.part1.inter', index = False, sep = ',')
     validation[['uid:token', 'venue_id:token', 'timestamp:token']].to_csv('foursquare/foursquare.part2.inter', index = False, sep = ',')
     test[['uid:token', 'venue_id:token', 'timestamp:token']].to_csv('foursquare/foursquare.part3.inter', index = False, sep = ',')
 
+    
 
 if __name__ == '__main__':
     preprocess()
