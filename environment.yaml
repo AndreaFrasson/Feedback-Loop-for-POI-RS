@@ -16,11 +16,15 @@ benchmark_filename: ['part1', 'part2', 'part3']
 seed: 1234
 reproducibility: True
 
-# Training config
-epochs: 10
-train_neg_sample_args: {None}
 
 # Evaluation config
 metrics: ['Hit', 'Precision']
 valid_metric: Hit@10
 metric_decimal_place: 4
+
+eval_args: {
+            group_by: 'user',
+            order: 'TO', # temporal order
+            split: {'LS': 'valid_and_test'}, # leave one out
+            mode: 'full'
+            }

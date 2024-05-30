@@ -1,36 +1,28 @@
 import utils as u
 from preprocess import preprocess
 import metrics
-
 import pandas as pd
 import numpy as np
 from recbole.config import Config
 from recbole.data import data_preparation, create_dataset
 from recbole.quick_start.quick_start import get_model, get_trainer
+import os
 
-import matplotlib.pyplot as plt
+# SETTINGS
+MODEL = 'BPR'
+DATA_PATH = os.getcwd() 
+TOP_K = 10
+DATASET = 'foursquare'
+EPOCHS = 10
 
-def default_params():
-    params ={'model': 'BPR',
-        'data_path': '/Users/andreafrasson/Desktop/tesi/Feedback-Loop-for-POI-RS',
-        'topk': 10,
-        'use_gpu': True,
-        'gpu_id': 0,
-        'dataset': 'foursquare',
-        'embedding_size': 64,
-        'learning_rate': 0.0014441770317725243,
-        'mlp_hidden_size': [128, 128],
-        'train_batch_size': 2048,
-        'eval_args': {
-            'group_by': 'user',
-            'order': 'TO', # temporal order
-            'split': {'LS': 'valid_and_test'}, # leave one out
-            'mode': 'full'}
-    }
+# Default parameters
+EMBEDDING_SIZE = 64
+LEARNING_RATE = 0.0014441770317725243
+MLP_HIDDEN_SIZE = [128, 128]
+TRAIN_BATCH_SIZE = 2048
 
-    return params
 
-if __name__ == '__main__':
+def run_BPR(default = False):
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
@@ -40,15 +32,29 @@ if __name__ == '__main__':
     train_users = pd.read_csv('foursquare/foursquare.part1.inter', sep = ',')['uid:token'].to_list()
     train_users = list(set(train_users))
 
-    #hyperparameter tuning
     default = True
-    if default:
-        params = default_params()
-    else:
-        params = u.tuning('BPR', 'bpr.hyper', {'dataset': 'foursquare'})
+    config_dict = {
+            'model': MODEL,
+            'data_path': DATA_PATH,
+            'top_k': TOP_K,
+            'dataset': DATASET,
+            'epochs': EPOCHS
+        }
 
+    if default:
+        tuned_params = {
+            'embedding_size': EMBEDDING_SIZE,
+            'learnign_rate': LEARNING_RATE,
+            'mlp_hidden_size': MLP_HIDDEN_SIZE,
+            'train_batch_size': TRAIN_BATCH_SIZE
+        }
+    else:
+        #hyperparameter tuning
+        tuned_params = u.tuning('BPR', 'bpr.hyper', {'dataset': 'foursquare'})
+    
+    config_dict.update(tuned_params)
     # create the configurator
-    config = Config(config_file_list=['foursquare_general.yaml'], config_dict = params)
+    config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
     # environment settings dor the loop
     m = 3
@@ -63,7 +69,7 @@ if __name__ == '__main__':
 
     # Main Loop
     while c < MaxIt:
-        print('--------- iteration number: ', c)
+        print('--------- iteration number: ', c+1)
 
         if c % m == 0:  
             # create the dataset
@@ -106,3 +112,7 @@ if __name__ == '__main__':
 
         c+=1
         print('')
+
+
+if __name__ == '__main__':
+    run_BPR()
