@@ -2,3 +2,5 @@ log_tensorboard/*
 saved/*
 **.pyc
 **.ipynb
+cache/*
+__pycache__/*

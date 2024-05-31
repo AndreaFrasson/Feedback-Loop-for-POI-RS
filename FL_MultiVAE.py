@@ -11,17 +11,14 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 # SETTINGS
-MODEL = 'BPR'
+MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
 EPOCHS = 10
 
 # Default parameters
-EMBEDDING_SIZE = 64
-LEARNING_RATE = 0.0014441770317725243
-MLP_HIDDEN_SIZE = [128, 128]
-TRAIN_BATCH_SIZE = 2048
+LEARNING_RATE = 0.005
 
 
 def run_BPR(default = False):
@@ -44,14 +41,11 @@ def run_BPR(default = False):
 
     if default:
         tuned_params = {
-            'embedding_size': EMBEDDING_SIZE,
             'learnign_rate': LEARNING_RATE,
-            'mlp_hidden_size': MLP_HIDDEN_SIZE,
-            'train_batch_size': TRAIN_BATCH_SIZE
         }
     else:
         #hyperparameter tuning
-        tuned_params = u.tuning('BPR', 'bpr.hyper', config_dict)
+        tuned_params = u.tuning('BPR', 'MultiVAE.hyper', config_dict)
     
     config_dict.update(tuned_params)
     # create the configurator
@@ -118,7 +112,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 7))
     # generates a converging sequence for heavy ball
     iterations = [i for i in range(len(card))]
-    training_step = [i for i in np.arange(len(card), step = 3)]
+    training_step = [i for i in np.arange(len(hit))]
 
     axs[0].set_title('Diversity of Items')
     axs[0].plot(iterations, card, color = 'blue', linestyle = 'dashed')

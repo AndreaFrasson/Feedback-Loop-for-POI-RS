@@ -25,21 +25,12 @@ def _from_int_tp_str(items):
 # @input model (string): name of the model to search
 # @input hyper_file (string): name of the file with the values of the hyperparameter
 # @return params (dict): best parameters found  
-def tuning(model_name, hyper_file, params_dict = {}):
+def tuning(model_name, hyper_file, config_dict = {}):
 
-    config_dict = {
-            'model': model_name,
-            'data_path': os.getcwd(),
-            'topk': 10,
-            'use_gpu': True,
-            'gpu_id': '0',
-    }
-
-    config_dict.update(params_dict)
 
     def objective_function(params_dict=None, config_file_list=None):
 
-        config = Config(config_dict=config_dict, config_file_list=['foursquare_general.yaml'])
+        config = Config(config_dict=config_dict, config_file_list=['environment.yaml'])
 
         if config['seed'] is not None and config['reproducibility'] is not None:
             init_seed(config['seed'], config['reproducibility'])
@@ -61,7 +52,7 @@ def tuning(model_name, hyper_file, params_dict = {}):
         }
 
     hp = HyperTuning(objective_function=objective_function, algo='random', early_stop=10,
-                max_evals=100, params_file=hyper_file, fixed_config_file_list=['foursquare_general.yaml'], params_dict=config_dict)
+                max_evals=100, params_file=hyper_file, fixed_config_file_list=['environment.yaml'], params_dict=config_dict)
 
     hp.run()
     params =  config_dict | hp.best_params

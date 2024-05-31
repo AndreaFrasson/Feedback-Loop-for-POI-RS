@@ -8,7 +8,7 @@ from tqdm import tqdm, tqdm_notebook
 from recbole.data.interaction import Interaction
 
 
-def _uncorrelated_entropy_individual(interactions, normalize=False):
+def _uncorrelated_entropy_individual(interactions, normalize=True):
     """
     Compute the uncorrelated entropy of a single individual given their TrajDataFrame.
 
@@ -26,10 +26,10 @@ def _uncorrelated_entropy_individual(interactions, normalize=False):
         the temporal-uncorrelated entropy of the individual
     """
     n = len(interactions)
-    probs = interactions['venue_id:token'].value_counts(normalize=True).sort_index().to_numpy()
+    probs = interactions.value_counts(normalize=True).sort_index().to_numpy()
     entropy = stats.entropy(probs, base=2.0)
     if normalize:
-        n_vals = len(np.unique(interactions[["venue_id:token"]].values, axis=0))
+        n_vals = len(np.unique(interactions.values, axis=0))
         if n_vals > 1:
             entropy /= np.log2(n_vals)
         else:  # to avoid NaN
@@ -37,6 +37,6 @@ def _uncorrelated_entropy_individual(interactions, normalize=False):
     return entropy
 
 
-def uncorrelated_entropy(interactions):
-    df = interactions.groupby("uid:token").apply(lambda x: _uncorrelated_entropy_individual(x))
+def uncorrelated_entropy(interactions, group_attr, value_attr):
+    df = interactions.groupby(group_attr).apply(lambda x: _uncorrelated_entropy_individual(x[value_attr]))
     return pd.DataFrame(df).reset_index().rename(columns={0: 'entropy'})
