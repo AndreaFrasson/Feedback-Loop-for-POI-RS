@@ -25,8 +25,7 @@ def _from_int_tp_str(items):
 # @input model (string): name of the model to search
 # @input hyper_file (string): name of the file with the values of the hyperparameter
 # @return params (dict): best parameters found  
-def tuning(model_name, hyper_file, config_dict = {}):
-
+def tuning(model_name, hyper_file, config_dict):
 
     def objective_function(params_dict=None, config_file_list=None):
 
@@ -38,7 +37,7 @@ def tuning(model_name, hyper_file, config_dict = {}):
         dataset = create_dataset(config)
         train_data, valid_data, test_data = data_preparation(config, dataset)
         model_name = config['model']
-        model = get_model(model_name)(config, train_data._dataset)
+        model = get_model(model_name)(config, train_data._dataset).to(config['device'])
         trainer = get_trainer(config['MODEL_TYPE'], config['model'])(config, model)
         best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
         test_result = trainer.evaluate(test_data)
@@ -55,8 +54,9 @@ def tuning(model_name, hyper_file, config_dict = {}):
                 max_evals=100, params_file=hyper_file, fixed_config_file_list=['environment.yaml'], params_dict=config_dict)
 
     hp.run()
-    params =  config_dict | hp.best_params
-    return params
+    config_dict.update(hp.best_params)
+
+    return config_dict
 
 
 
@@ -80,7 +80,7 @@ def prediction(users, items, model):
     })
 
     with torch.no_grad():
-        scores = model.full_sort_predict(input_inter).reshape((len(users), -1))
+        scores = model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
     
     # get the 10 items with highest scores
     rec_list = np.argsort(scores, axis = 1)[:, -10:]

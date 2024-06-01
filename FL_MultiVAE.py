@@ -9,13 +9,15 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import torch
 
 # SETTINGS
 MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 10
+EPOCHS = 50
+DEVICE_ID = '0'
 
 # Default parameters
 LEARNING_RATE = 0.005
@@ -36,7 +38,9 @@ def run_BPR(default = False):
             'data_path': DATA_PATH,
             'top_k': TOP_K,
             'dataset': DATASET,
-            'epochs': EPOCHS
+            'epochs': EPOCHS,
+            'use_gpu': len(DEVICE_ID) > 0,
+            'device_id': DEVICE_ID
         }
 
     if default:
@@ -45,7 +49,7 @@ def run_BPR(default = False):
         }
     else:
         #hyperparameter tuning
-        tuned_params = u.tuning('BPR', 'MultiVAE.hyper', config_dict)
+        tuned_params = u.tuning(MODEL, 'MultiVAE.hyper', config_dict)
     
     config_dict.update(tuned_params)
     # create the configurator
@@ -132,4 +136,4 @@ if __name__ == '__main__':
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.show()
+    plt.savefig('run_MultiVAE.png')
