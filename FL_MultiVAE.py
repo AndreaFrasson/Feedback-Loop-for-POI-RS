@@ -115,8 +115,8 @@ if __name__ == '__main__':
         m = 5
         MaxIt = 20
     else:
-        m = sys.argv[1]
-        MaxIt = sys.argv[2]
+        m = int(sys.argv[1])
+        MaxIt = int(sys.argv[2])
 
     card, hit, prec, mean_entropy = run_BPR(m, MaxIt)
 
