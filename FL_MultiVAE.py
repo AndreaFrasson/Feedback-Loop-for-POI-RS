@@ -16,14 +16,14 @@ MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 50
+EPOCHS = 30
 DEVICE_ID = '0'
 
 # Default parameters
 LEARNING_RATE = 0.005
 
 
-def run_BPR(default = False):
+def run_BPR(m = 3, MaxIt = 20, default = False):
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
@@ -56,8 +56,6 @@ def run_BPR(default = False):
     config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
     # environment settings dor the loop
-    m = 3
-    MaxIt = 20
     c = 0
 
     # output metrics
@@ -110,7 +108,10 @@ def run_BPR(default = False):
 
 
 if __name__ == '__main__':
-    card, hit, prec, mean_entropy = run_BPR()
+    m = 5
+    MaxIt = 20
+
+    card, hit, prec, mean_entropy = run_BPR(m, MaxIt)
 
     # all plot in the same picture
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 7))
@@ -136,4 +137,4 @@ if __name__ == '__main__':
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.savefig('run_MultiVAE.png')
+    plt.savefig('run_MultiVAE_TrStep_'+str(m)+'_.png')
