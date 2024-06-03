@@ -9,7 +9,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import torch
+import sys
 
 # SETTINGS
 MODEL = 'MultiVAE'
@@ -107,9 +107,16 @@ def run_BPR(m = 3, MaxIt = 20, default = False):
     return card, hit, prec, mean_entropy_train
 
 
+
 if __name__ == '__main__':
-    m = 5
-    MaxIt = 20
+    # total arguments
+    n = len(sys.argv)
+    if n < 3:
+        m = 5
+        MaxIt = 20
+    else:
+        m = sys.argv[1]
+        MaxIt = sys.argv[2]
 
     card, hit, prec, mean_entropy = run_BPR(m, MaxIt)
 
