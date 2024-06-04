@@ -65,7 +65,7 @@ def run_BPR(m = 3, MaxIt = 20, default = False):
     mean_entropy_train = []
 
     # Main Loop
-    for c in tqdm(range(MaxIt), smoothing=1):
+    for c in tqdm(range(MaxIt)):
 
         if c % m == 0:  
             # create the dataset
