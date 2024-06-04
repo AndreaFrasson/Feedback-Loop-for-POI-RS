@@ -1,11 +1,8 @@
 import pandas as pd
 import numpy as np
-import sys
-import torch
 from scipy import stats
-
-from tqdm import tqdm, tqdm_notebook
-from recbole.data.interaction import Interaction
+from skmob.measures.individual import radius_of_gyration
+import skmob
 
 
 def _uncorrelated_entropy_individual(interactions, normalize=True):
@@ -37,6 +34,13 @@ def _uncorrelated_entropy_individual(interactions, normalize=True):
     return entropy
 
 
-def uncorrelated_entropy(interactions, group_attr, value_attr):
+def compute_uncorrelated_entropy(interactions, group_attr, value_attr):
     df = interactions.groupby(group_attr).apply(lambda x: _uncorrelated_entropy_individual(x[value_attr]))
     return pd.DataFrame(df).reset_index().rename(columns={0: 'entropy'})
+
+
+def compute_rog(interactions, k = None):
+    locations_df = pd.read_csv('data/foursquare_complete.csv', sep = ',')
+    interactions_df = pd.DataFrame(interactions.numpy())
+    if k is None: # compute the global radius of gyrations
+        return

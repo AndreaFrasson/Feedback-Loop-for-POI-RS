@@ -5,7 +5,7 @@ TIME_FIELD: timestamp
 
 load_col:
     inter: [uid, venue_id, timestamp]
-    item: [venue_id, venue_category_name]
+    item: [venue_id, venue_category_name, lat, lon]
 
 save_dataset: False
 save_dataloaders: False
