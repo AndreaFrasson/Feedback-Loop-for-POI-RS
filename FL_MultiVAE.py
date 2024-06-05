@@ -100,7 +100,7 @@ def run_BPR(m = 3, MaxIt = 20, default = False):
         u.update_incremental(chosen_items, training_set, validation_set)
 
         # compute the entropy for the new training set
-        entropy_train = metrics.uncorrelated_entropy(pd.read_csv('foursquare/foursquare.part1.inter', sep = ','), 'uid:token', 'venue_id:token')
+        entropy_train = metrics.compute_uncorrelated_entropy(pd.read_csv('foursquare/foursquare.part1.inter', sep = ','), 'uid:token', 'venue_id:token')
         # mean value for the users
         mean_entropy_train.append(np.mean(entropy_train['entropy'].to_numpy()))
 
