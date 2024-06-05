@@ -129,7 +129,7 @@ if __name__ == '__main__':
     axs[0].set_title('Diversity of Items')
     axs[0].plot(iterations, card, color = 'blue', linestyle = 'dashed')
     axs[0].set_xticks(range(len(iterations)))
-    axs[0].vlines(np.arange(len(iterations), step=3), ymin=min(card), ymax= max(card), colors='red',linestyles='dotted')
+    axs[0].vlines(np.arange(len(iterations), step=m), ymin=min(card), ymax= max(card), colors='red',linestyles='dotted')
 
     axs[1].set_title('Test metrics')
     axs[1].plot(training_step, hit)
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     axs[2].set_title('Mean Normalized Entropy')
     axs[2].plot(iterations, mean_entropy, color = 'blue', linestyle = 'dashed')
     axs[2].set_xticks(range(len(iterations)))
-    axs[2].vlines(np.arange(len(iterations), step=3), ymin=min(mean_entropy), ymax= max(mean_entropy), colors='red',linestyles='dotted')
+    axs[2].vlines(np.arange(len(iterations), step=m), ymin=min(mean_entropy), ymax= max(mean_entropy), colors='red',linestyles='dotted')
     # Adjust layout
     plt.tight_layout()
     # Show plots
