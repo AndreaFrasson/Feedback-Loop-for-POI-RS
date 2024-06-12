@@ -120,6 +120,10 @@ if __name__ == '__main__':
 
     card, hit, prec, mean_entropy = run_BPR(m, MaxIt)
 
+    pd.DataFrame(card).to_csv('card.csv', index = False)
+    pd.DataFrame(hit).to_csv('hit.csv', index = False)
+    pd.DataFrame(prec).to_csv('prec.csv', index = False)
+
     # all plot in the same picture
     fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 7))
     # generates a converging sequence for heavy ball
