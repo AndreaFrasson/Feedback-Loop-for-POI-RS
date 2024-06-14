@@ -57,7 +57,7 @@ if __name__ == '__main__':
         m = int(sys.argv[1])
         MaxIt = int(sys.argv[2])
 
-    card, hit, prec, mean_entropy = run(m, MaxIt)
+    run(m, MaxIt)
 
     pd.DataFrame(card).to_csv('card.csv', index = False)
     pd.DataFrame(hit).to_csv('hit.csv', index = False)
