@@ -3,13 +3,13 @@ from preprocess import preprocess
 import metrics
 import pandas as pd
 import numpy as np
-from recbole.config import Config
 from recbole.data import data_preparation, create_dataset
 from recbole.quick_start.quick_start import get_model, get_trainer
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import sys
+from Feedback_Loop import FeedBack_Loop
 
 # SETTINGS
 MODEL = 'MultiVAE'
@@ -23,15 +23,12 @@ DEVICE_ID = '0'
 LEARNING_RATE = 0.005
 
 
-def run_BPR(m = 3, MaxIt = 20, default = False):
+def run(m = 3, MaxIt = 20, default = False):
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
     preprocess(seed)
 
-    # train users
-    train_users = pd.read_csv('foursquare/foursquare.part1.inter', sep = ',')['uid:token'].to_list()
-    train_users = list(set(train_users))
 
     config_dict = {
             'model': MODEL,
@@ -40,71 +37,13 @@ def run_BPR(m = 3, MaxIt = 20, default = False):
             'dataset': DATASET,
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
-            'device_id': DEVICE_ID
-        }
-
-    if default:
-        tuned_params = {
+            'device_id': DEVICE_ID,
             'learnign_rate': LEARNING_RATE,
         }
-    else:
-        #hyperparameter tuning
-        tuned_params = u.tuning(MODEL, 'MultiVAE.hyper', config_dict)
-    
-    config_dict.update(tuned_params)
-    # create the configurator
-    config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
-    # environment settings dor the loop
-    c = 0
+    fl = FeedBack_Loop(config_dict, m)
+    fl.loop(MaxIt, 'r', True, 'MultiVAE.hyper')
 
-    # output metrics
-    hit = []
-    prec = []
-    card = []
-    mean_entropy_train = []
-
-    # Main Loop
-    for c in tqdm(range(MaxIt)):
-
-        if c % m == 0:  
-            # create the dataset
-            dataset = create_dataset(config)
-            # split
-            training_set, validation_set, test_set = data_preparation(config, dataset)
-
-            # get model
-            model = get_model(config['model'])(config, training_set.dataset).to(config['device'])
-
-            # trainer loading and initialization
-            trainer = get_trainer(config['MODEL_TYPE'], config['model'])(config, model)
-            # model training
-            best_valid_score, best_valid_result = trainer.fit(training_set, validation_set)
-            results = trainer.evaluate(test_set)
-            hit.append(results['hit@10'])
-            prec.append(results['precision@10'])
-
-        # generate synthetic data for the training
-        uid_series = training_set._dataset.token2id(training_set._dataset.uid_field, [str(s) for s in train_users])
-        items = training_set._dataset.inter_feat[training_set._dataset.iid_field].reshape(len(train_users), -1)
-        rec_list = u.prediction(uid_series, items, model)
-
-        # translate the location id back to the original embedding
-        external_item_list = training_set.dataset.id2token(training_set.dataset.iid_field, rec_list.cpu())
-        card.append(len(np.unique(external_item_list.flatten())))
-
-        # choose one item
-        chosen_items = u.choose_item(rec_list, training_set._dataset, 'c')
-
-        # update the training/validation file
-        u.update_incremental(chosen_items, training_set, validation_set)
-
-        # compute the entropy for the new training set
-        entropy_train = metrics.uncorrelated_entropy(pd.read_csv('foursquare/foursquare.part1.inter', sep = ','), 'uid:token', 'venue_id:token')
-        # mean value for the users
-        mean_entropy_train.append(np.mean(entropy_train['entropy'].to_numpy()))
-
-    return card, hit, prec, mean_entropy_train
 
 
 
@@ -118,7 +57,7 @@ if __name__ == '__main__':
         m = int(sys.argv[1])
         MaxIt = int(sys.argv[2])
 
-    card, hit, prec, mean_entropy = run_BPR(m, MaxIt)
+    card, hit, prec, mean_entropy = run(m, MaxIt)
 
     pd.DataFrame(card).to_csv('card.csv', index = False)
     pd.DataFrame(hit).to_csv('hit.csv', index = False)

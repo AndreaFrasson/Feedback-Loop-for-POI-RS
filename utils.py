@@ -16,7 +16,7 @@ def _from_ids_to_int(items):
     return np.array([int(i) for i in items])
 
 
-def _from_int_tp_str(items):
+def _from_int_to_str(items):
     return np.array([str(i) for i in items])
 
 
@@ -157,12 +157,12 @@ def _get_category_distribution_by_user(interactions, id_cat_dict):
 # @input category_dict
 # @input visits
 # #output item (int): id of the selected item
-def choose_item(external_item_list, dataset, mode = 'random'):
+def choose_item(external_item_list, dataset, mode):
 
     if mode == 'random' or mode == 'r':
-        return np.apply_along_axis(np.random.choice, 1, external_item_list)
+        selected_tokens = np.apply_along_axis(np.random.choice, 1, external_item_list)
     
-    if mode == 'category' or mode == 'c':
+    elif mode == 'category' or mode == 'c':
         with open('id_category.pkl', 'rb') as file:
             loaded_dict = pickle.load(file)
 
@@ -171,23 +171,25 @@ def choose_item(external_item_list, dataset, mode = 'random'):
 
         users = np.unique(dataset.id2token(dataset.uid_field, dataset.inter_feat[uid_field]))
 
-
         interactions = dataset.id2token(dataset.iid_field, dataset.inter_feat[iid_field]).reshape(len(users), -1)
         interactions = np.apply_along_axis(_from_ids_to_int, 1, interactions)
 
         probability = np.apply_along_axis(_get_category_distribution_by_user, 1, interactions, id_cat_dict = loaded_dict)
 
-        selected_items = []
+        selected_tokens = []
+
         for items, prob in zip(external_item_list, probability):
             category_recommended = _from_ids_to_category(items, id_cat_dict = loaded_dict)
             prob_distr = [prob[i] for i in category_recommended]
             prob_distr_norm = np.array(prob_distr) / sum(prob_distr)
 
-            selected_items.append(np.random.choice(items, p = prob_distr_norm))
-
-        return selected_items
+            selected_tokens.append(np.random.choice(items, p = prob_distr_norm))
 
     else:
         raise NotImplementedError
+    
+
+    selected_ids = dataset.token2id(dataset.iid_field, _from_int_to_str(selected_tokens))
+    return selected_tokens, _from_ids_to_int(selected_ids)
 
 

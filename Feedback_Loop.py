@@ -1,27 +1,25 @@
 import utils
-from preprocess import preprocess
 import metrics
 import pandas as pd
 import numpy as np
 from recbole.config import Config
 from recbole.data import data_preparation, create_dataset
 from recbole.quick_start.quick_start import get_model, get_trainer
-import os
+from recbole.utils import init_seed
 from tqdm import tqdm
-import matplotlib.pyplot as plt
-import sys
 import torch
 import copy
 from recbole.data import Interaction
-import pickle
+from recbole.trainer import HyperTuning
 
 
 class FeedBack_Loop():
 
-    def __init__(self, config, steps):
-        self.config = config
+    def __init__(self, config_dict, steps):
+        self.config_dict = config_dict
+        self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
         self.steps = steps 
-        self.__initialize()
+
 
 
     def __initialize(self):
@@ -33,41 +31,43 @@ class FeedBack_Loop():
 
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
 
-        # get model
-        self.model = get_model(self.config['model'])(self.config, self.training_set.dataset).to(self.config['device'])
-        # trainer loading and initialization
-        self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
         return 
     
 
-    def loop(self, MaxIt):
 
-        for c in tqdm(range(1,MaxIt+1)):
+    def loop(self, MaxIt, choice = 'r', tuning = False, hyper_file = None):
+        if tuning:
+            if not isinstance(hyper_file, str):
+                raise NotImplementedError
+            
+            self.tuning(hyper_file)
+
+        self.__initialize()
+
+        for c in tqdm(range(MaxIt)):
             if c % self.steps == 0:
-                self.__initialize()
-                # model training
                 # get model
                 self.model = get_model(self.config['model'])(self.config, self.training_set.dataset).to(self.config['device'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
+                # model training
                 best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
                 print(best_valid_score)
                 results = self.trainer.evaluate(self.test_set)
 
-            predictions = self.generate_prediction(self.training_set._dataset)
+            predictions, external_ids = self.generate_prediction(self.training_set._dataset)
             # choose one item
-            chosen_items = utils.choose_item(predictions, self.training_set._dataset, 'c')
+            chosen_tokens, chosen_ids = utils.choose_item(external_ids, self.training_set._dataset, choice)
 
-            self.update_incremental(chosen_items)
+            self.update_incremental(chosen_ids)
             
-
 
 
     
     def fit(self):
         best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
         return best_valid_score, best_valid_result
-    
+
 
     def evaluate(self):
         results = self.trainer.evaluate(self.test_set)
@@ -86,8 +86,10 @@ class FeedBack_Loop():
         # translate the location id back to the original embedding
         external_item_list = dataset.id2token(dataset.iid_field, rec_list.cpu())     
         
-        return np.apply_along_axis(utils._from_ids_to_int, 1, external_item_list)
+        return rec_list, np.apply_along_axis(utils._from_ids_to_int, 1, external_item_list)
     
+
+
 
     # given a list of users, a matrix of items visited, and the model make the prediction for each user.
     # @input users: list, internal user ids
@@ -96,8 +98,6 @@ class FeedBack_Loop():
     # @input model: recbole.model.*, model
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
     def __prediction(self, users, items, model):
-
-
         #make prediction for users
         input_inter = Interaction({
             'uid': users,
@@ -130,3 +130,40 @@ class FeedBack_Loop():
                      columns=[self.uid_field, self.iid_field, self.time_field])
         
         self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
+
+
+
+    # Hyperparameter tuning for the model. Perform a random search for
+    # tuning the hyperparameter for the model
+    # @input hyper_file (string): name of the file with the values of the hyperparameter
+    def tuning(self, hyper_file):
+
+        def objective_function(params_dict=None, config_file_list=None):
+
+            if self.config['seed'] is not None and self.config['reproducibility'] is not None:
+                init_seed(self.config['seed'], self.config['reproducibility'])
+
+            dataset = create_dataset(self.config)
+            train_data, valid_data, test_data = data_preparation(self.config, dataset)
+            model_name = self.config['model']
+            model = get_model(model_name)(self.config, train_data._dataset).to(self.config['device'])
+            trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, model)
+            best_valid_score, best_valid_result = trainer.fit(train_data, valid_data)
+            test_result = trainer.evaluate(test_data)
+
+            return {
+                'model': model_name,
+                'best_valid_score': best_valid_score,
+                'valid_score_bigger': self.config['valid_metric_bigger'],
+                'best_valid_result': best_valid_result,
+                'test_result': test_result
+            }
+
+        hp = HyperTuning(objective_function=objective_function, algo='random', early_stop=10,
+                    max_evals=100, params_file=hyper_file, fixed_config_file_list=['environment.yaml'], params_dict=self.config_dict)
+        
+        print('starting tuning phase -------')
+        hp.run()
+        self.config_dict.update(hp.best_params)
+        self.config = Config(config_file_list=['environment.yaml'], config_dict=self.config_dict)
+        print('ended tuning phase ----')
