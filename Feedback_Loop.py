@@ -22,7 +22,7 @@ class FeedBack_Loop():
 
 
 
-    def __initialize(self):
+    def initialize(self):
         self.dataset = create_dataset(self.config)
 
         self.iid_field = self.dataset.iid_field
@@ -30,19 +30,18 @@ class FeedBack_Loop():
         self.time_field = self.dataset.time_field
 
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
-
-        return 
     
 
 
     def loop(self, MaxIt, choice = 'r', tuning = False, hyper_file = None):
+        self.metrics = {}
         if tuning:
             if not isinstance(hyper_file, str):
                 raise NotImplementedError
             
             self.tuning(hyper_file)
 
-        self.__initialize()
+        self.initialize()
 
         for c in tqdm(range(MaxIt)):
             if c % self.steps == 0:
@@ -52,14 +51,15 @@ class FeedBack_Loop():
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
                 # model training
                 best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-                print(best_valid_score)
                 results = self.trainer.evaluate(self.test_set)
+                print(results)
 
             predictions, external_ids = self.generate_prediction(self.training_set._dataset)
             # choose one item
             chosen_tokens, chosen_ids = utils.choose_item(external_ids, self.training_set._dataset, choice)
 
             self.update_incremental(chosen_ids)
+            self.compute_metrics(predictions)
             
 
 
@@ -167,3 +167,14 @@ class FeedBack_Loop():
         self.config_dict.update(hp.best_params)
         self.config = Config(config_file_list=['environment.yaml'], config_dict=self.config_dict)
         print('ended tuning phase ----')
+
+
+    def compute_metrics(self, recommended_items):
+        self.metrics['card'] = self.metrics.get('card', []) + [len(set(recommended_items.flatten().numpy()))]
+        self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [metrics.compute_rog(self.training_set._dataset)['radius_of_gyration'].mean()]
+        self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration'].mean()]
+        #self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [metrics.distinct_items(self.training_set._dataset)]
+        #self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_itmes_suggested(recommended_items, self.training_set._dataset)]
+        #self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [metrics.new_items_suggested(recommended_items, self.training_set._dataset)]
+        entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
+        self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [np.mean(entropy['entropy'])]

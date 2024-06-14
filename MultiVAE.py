@@ -41,6 +41,7 @@ def run(m = 3, MaxIt = 20, default = False):
             'learnign_rate': LEARNING_RATE,
         }
 
+
     fl = FeedBack_Loop(config_dict, m)
     fl.loop(MaxIt, 'r', True, 'MultiVAE.hyper')
 
