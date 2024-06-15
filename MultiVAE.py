@@ -69,7 +69,7 @@ if __name__ == '__main__':
     axs[0].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['card']), ymax= max(fl.metrics['card']), colors='red',linestyles='dotted')
 
     axs[1].set_title('Test metrics')
-    axs[1].plot(training_step, len(fl.metrics['test_hit']))
+    axs[1].plot(training_step, fl.metrics['test_hit'])
     axs[1].set_xticks(range(len(training_step)))
     axs[1].legend(['Hit@10',])
 
@@ -81,3 +81,4 @@ if __name__ == '__main__':
     plt.tight_layout()
     # Show plots
     plt.savefig('plot/run_MultiVAE_TrStep_'+str(m)+'_.png')
+

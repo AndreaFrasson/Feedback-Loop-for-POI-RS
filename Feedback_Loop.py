@@ -53,6 +53,7 @@ class FeedBack_Loop():
                 best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
                 results = self.trainer.evaluate(self.test_set)
                 self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
 
             predictions, external_ids = self.generate_prediction(self.training_set._dataset)
             # choose one item
