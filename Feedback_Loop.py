@@ -175,7 +175,9 @@ class FeedBack_Loop():
         self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [metrics.compute_rog(self.training_set._dataset)['radius_of_gyration'].mean()]
         self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration'].mean()]
         #self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [metrics.distinct_items(self.training_set._dataset)]
-        #self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_itmes_suggested(recommended_items, self.training_set._dataset)]
-        #self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [metrics.new_items_suggested(recommended_items, self.training_set._dataset)]
+        self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_items_suggested(
+                                                                           recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
+        self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [metrics.new_items_suggested(
+                                                                           recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
         self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [np.mean(entropy['entropy'])]

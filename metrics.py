@@ -90,3 +90,31 @@ def compute_rog(interactions, k = None):
     rog_k = radius_of_gyration(tdf, False)
 
     return rog_k
+
+
+# count, for each user, how many items in the recommendetion list proposed
+# were already saw. Return the sum
+def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
+    users = set(dataset.inter_feat[uid_field].numpy())
+    history = dataset.inter_feat[iid_field].numpy().reshape(len(users), -1)
+
+    old_items = 0
+    for rec, hist in list(zip(recommended_items, history)):
+        listC =[list(set(hist)).count(x) for x in rec]
+        old_items += sum(listC)
+
+    return old_items
+
+
+# count, for each user, how many items in the recommendetion list proposed
+# are new Return the sum
+def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
+    users = set(dataset.inter_feat[uid_field].numpy())
+    history = dataset.inter_feat[iid_field].numpy().reshape(len(users), -1)
+
+    new_items = 0
+    for rec, hist in list(zip(recommended_items, history)):
+        listC =[list(set(hist)).count(x) for x in rec]
+        new_items += len(rec) - sum(listC)
+
+    return new_items
