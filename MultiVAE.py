@@ -58,7 +58,7 @@ if __name__ == '__main__':
     fl.loop(MaxIt, 'r', True, 'MultiVAE.hyper')
 
     # all plot in the same picture
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 7))
+    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(20, 7))
     # generates a converging sequence for heavy ball
     iterations = [i for i in range(len(fl.metrics['card']))]
     training_step = [i for i in np.arange(len(fl.metrics['test_hit']))]

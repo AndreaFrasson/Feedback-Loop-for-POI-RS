@@ -191,7 +191,8 @@ class FeedBack_Loop():
         self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration'].mean()]
        
         # distinct items for each user
-        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [np.mean(metrics.distinct_items(self.training_set._dataset))]
+        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [np.mean(metrics.distinct_items(self.training_set._dataset, self.uid_field, self.iid_field))]
+
         # old items suggested
         self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_items_suggested(
                                                                            recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
