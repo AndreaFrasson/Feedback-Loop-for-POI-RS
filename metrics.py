@@ -54,7 +54,6 @@ def topk_history(dataframe, k = 10):
 
 
 
-
 def compute_rog(interactions, k = None):
 
     pois_df = pd.read_csv('foursquare/foursquare.item')
@@ -122,10 +121,12 @@ def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
     return new_items
 
 
+
 # for each user, compute the number of distinct items in his/her history
 def distinct_items(dataset, uid_field, iid_field):
     df = pd.DataFrame(dataset.inter_feat.numpy())
     return df.groupby(uid_field)[iid_field].nunique()
+
 
 
 #può essere calcolato all'inizio e poi aggiornato
@@ -140,7 +141,57 @@ def _explore_return(traj):
     return len(explore), returns
 
 
+
 def get_explore_returns(dataset, uid_field, iid_field):
     df = pd.DataFrame(dataset.inter_feat.numpy())
     expl, ret = zip(*df.groupby(uid_field)[iid_field].apply(_explore_return).to_numpy())
     return expl, ret
+
+
+
+def _gini(array):
+    """Calculate the Gini coefficient of a numpy array."""
+    # based on bottom eq:
+    # http://www.statsdirect.com/help/generatedimages/equations/equation154.svg
+    # from:
+    # http://www.statsdirect.com/help/default.htm#nonparametric_methods/gini.htm
+    # All values are treated equally, arrays must be 1d:
+    array = array.flatten()
+    if np.amin(array) < 0:
+        # Values cannot be negative:
+        array -= np.amin(array)
+    # Values cannot be 0:
+    array = array + 0.0000001
+    # Values must be sorted:
+    array = np.sort(array)
+    # Index per array element:
+    index = np.arange(1,array.shape[0]+1)
+    # Number of array elements:
+    n = array.shape[0]
+    # Gini coefficient:
+    return ((np.sum((2 * index - n  - 1) * array)) / (n * np.sum(array)))
+
+
+
+def RelativeFrequency(my_list): 
+    # Creating an empty dictionary
+    freq = {}
+    for item in my_list:
+        if (item in freq):
+            freq[item] += 1
+        else:
+            freq[item] = 1
+ 
+    return np.array(list(freq.values())) / len(freq.values())
+
+
+
+def individual_gini(dataset, uid_field, iid_field):
+    df = pd.DataFrame(dataset.inter_feat.numpy())
+    return df.groupby(uid_field)[iid_field].apply(RelativeFrequency).apply(_gini)
+
+
+
+def item_gini(dataset, uid_field, iid_field):
+    df = pd.DataFrame(dataset.inter_feat.numpy())
+    return df.groupby(iid_field)[uid_field].apply(RelativeFrequency).apply(_gini)
