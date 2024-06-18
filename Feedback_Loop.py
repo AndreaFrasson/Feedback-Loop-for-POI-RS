@@ -99,9 +99,8 @@ class FeedBack_Loop():
     # @input users: list, internal user ids
     # @input items: torch.Tensor, interactions between users and items. Should be reshaped to 
     #               match the shape (len(users), len(set(items)))
-    # @input model: recbole.model.*, model
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
-    def __prediction(self, users, items, model):
+    def __prediction(self, users, items):
         #make prediction for users
         input_inter = Interaction({
             'uid': users,
@@ -109,7 +108,7 @@ class FeedBack_Loop():
         })
 
         with torch.no_grad():
-            scores = model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
+            scores = self.model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
         
         # get the 10 items with highest scores
         rec_list = np.argsort(scores, axis = 1)[:, -10:]

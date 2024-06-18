@@ -1,21 +1,17 @@
-import utils as u
 from preprocess import preprocess
-import metrics
-import pandas as pd
 import numpy as np
-from recbole.config import Config
-from recbole.data import data_preparation, create_dataset
-from recbole.quick_start.quick_start import get_model, get_trainer
 import os
-from tqdm import tqdm
 import matplotlib.pyplot as plt
+import sys
+from Feedback_Loop import FeedBack_Loop
 
 # SETTINGS
 MODEL = 'BPR'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 10
+EPOCHS = 30
+DEVICE_ID = '0'
 
 # Default parameters
 EMBEDDING_SIZE = 64
@@ -24,118 +20,77 @@ MLP_HIDDEN_SIZE = [128, 128]
 TRAIN_BATCH_SIZE = 2048
 
 
-def run_BPR(default = False):
+if __name__ == '__main__':
+    # total arguments
+    n = len(sys.argv)
+    if n < 3:
+        m = 5
+        MaxIt = 20
+    else:
+        m = int(sys.argv[1])
+        MaxIt = int(sys.argv[2])
 
-    # make the atomic files form the data
+        # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
     preprocess(seed)
 
-    # train users
-    train_users = pd.read_csv('foursquare/foursquare.part1.inter', sep = ',')['uid:token'].to_list()
-    train_users = list(set(train_users))
 
     config_dict = {
             'model': MODEL,
             'data_path': DATA_PATH,
             'top_k': TOP_K,
             'dataset': DATASET,
-            'epochs': EPOCHS
-        }
-
-    if default:
-        tuned_params = {
-            'embedding_size': EMBEDDING_SIZE,
+            'epochs': EPOCHS,
+            'use_gpu': len(DEVICE_ID) > 0,
+            'device_id': DEVICE_ID,
             'learnign_rate': LEARNING_RATE,
-            'mlp_hidden_size': MLP_HIDDEN_SIZE,
-            'train_batch_size': TRAIN_BATCH_SIZE
         }
-    else:
-        #hyperparameter tuning
-        tuned_params = u.tuning('BPR', 'bpr.hyper', config_dict)
-    
-    config_dict.update(tuned_params)
-    # create the configurator
-    config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-
-    # environment settings dor the loop
-    m = 3
-    MaxIt = 20
-    c = 0
-
-    # output metrics
-    hit = []
-    prec = []
-    card = []
-    mean_entropy_train = []
-
-    # Main Loop
-    for c in tqdm(range(MaxIt), smoothing=1):
-
-        if c % m == 0:  
-            # create the dataset
-            dataset = create_dataset(config)
-            # split
-            training_set, validation_set, test_set = data_preparation(config, dataset)
-
-            # get model
-            model = get_model(config['model'])(config, training_set.dataset).to(config['device'])
-
-            # trainer loading and initialization
-            trainer = get_trainer(config['MODEL_TYPE'], config['model'])(config, model)
-            # model training
-            best_valid_score, best_valid_result = trainer.fit(training_set, validation_set)
-            results = trainer.evaluate(test_set)
-            hit.append(results['hit@10'])
-            prec.append(results['precision@10'])
-
-        # generate synthetic data for the training
-        uid_series = training_set._dataset.token2id(training_set._dataset.uid_field, [str(s) for s in train_users])
-        items = training_set._dataset.inter_feat[training_set._dataset.iid_field].reshape(len(train_users), -1)
-        rec_list = u.prediction(uid_series, items, model)
-
-        # translate the location id back to the original embedding
-        external_item_list = training_set.dataset.id2token(training_set.dataset.iid_field, rec_list.cpu())
-        card.append(len(np.unique(external_item_list.flatten())))
-
-        # choose one item
-        chosen_items = u.choose_item(rec_list, training_set._dataset, 'c')
-
-        # update the training/validation file
-        u.update_incremental(chosen_items, training_set, validation_set)
-
-        # compute the entropy for the new training set
-        entropy_train = metrics.uncorrelated_entropy(pd.read_csv('foursquare/foursquare.part1.inter', sep = ','), 'uid:token', 'venue_id:token')
-        # mean value for the users
-        mean_entropy_train.append(np.mean(entropy_train['entropy'].to_numpy()))
-
-    return card, hit, prec, mean_entropy_train
 
 
-if __name__ == '__main__':
-    card, hit, prec, mean_entropy = run_BPR()
+    fl = FeedBack_Loop(config_dict, m)
+    fl.loop(MaxIt, 'r', True, 'MultiVAE.hyper')
 
     # all plot in the same picture
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(20, 7))
+    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(20, 7))
     # generates a converging sequence for heavy ball
-    iterations = [i for i in range(len(card))]
-    training_step = [i for i in np.arange(len(card), step = 3)]
+    iterations = [i for i in range(len(fl.metrics['L_col']))]
+    training_step = [i for i in np.arange(len(fl.metrics['test_hit']))]
 
-    axs[0].set_title('Diversity of Items')
-    axs[0].plot(iterations, card, color = 'blue', linestyle = 'dashed')
-    axs[0].set_xticks(range(len(iterations)))
-    axs[0].vlines(np.arange(len(iterations), step=3), ymin=min(card), ymax= max(card), colors='red',linestyles='dotted')
+    axs[0,0].set_title('Diversity of Items')
+    axs[0,0].plot(iterations, fl.metrics['L_col'], color = 'blue', linestyle = 'dashed')
+    axs[0,0].set_xticks(range(len(iterations)))
+    axs[0,0].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['L_col']), ymax= max(fl.metrics['L_col']), colors='red',linestyles='dotted')
 
-    axs[1].set_title('Test metrics')
-    axs[1].plot(training_step, hit)
-    axs[1].plot(training_step, prec)
-    axs[1].set_xticks(range(len(training_step)))
-    axs[1].legend(['Hit@10', 'Precision@10'])
 
-    axs[2].set_title('Mean Normalized Entropy')
-    axs[2].plot(iterations, mean_entropy, color = 'blue', linestyle = 'dashed')
-    axs[2].set_xticks(range(len(iterations)))
-    axs[2].vlines(np.arange(len(iterations), step=3), ymin=min(mean_entropy), ymax= max(mean_entropy), colors='red',linestyles='dotted')
+    axs[0,1].set_title('Test metrics')
+    axs[0,1].plot(training_step, fl.metrics['test_hit'])
+    axs[0,1].set_xticks(range(len(training_step)))
+    axs[0,1].legend(['Hit@10',])
+
+
+    axs[0,2].set_title('New item proposed')
+    axs[0,2].plot(iterations, fl.metrics['L_new_ind'], color = 'blue', linestyle = 'dashed')
+    axs[0,2].set_xticks(range(len(iterations)))
+    axs[0,2].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['L_new_ind']), ymax= max(fl.metrics['L_new_ind']), colors='red',linestyles='dotted')
+
+
+    axs[1,0].set_title('ROG')
+    axs[1,0].plot(iterations, fl.metrics['rog_ind'], color = 'blue', linestyle = 'dashed')
+    axs[1,0].set_xticks(range(len(iterations)))
+    axs[1,0].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['rog_ind']), ymax= max(fl.metrics['rog_ind']), colors='red',linestyles='dotted')
+
+
+    axs[1,1].set_title('S_col')
+    axs[1,1].plot(iterations, fl.metrics['S_col'], color = 'blue', linestyle = 'dashed')
+    axs[1,1].set_xticks(range(len(iterations)))
+    axs[1,1].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['S_col']), ymax= max(fl.metrics['S_col']), colors='red',linestyles='dotted')
+
+
+    axs[1,2].set_title('Gini_ind')
+    axs[1,2].plot(iterations, fl.metrics['Gini_ind'], color = 'blue', linestyle = 'dashed')
+    axs[1,2].set_xticks(range(len(iterations)))
+    axs[1,2].vlines(np.arange(len(iterations), step=m), ymin=min(fl.metrics['Gini_ind']), ymax= max(fl.metrics['Gini_ind']), colors='red',linestyles='dotted')
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.show()
+    plt.savefig('plot/run_MultiVAE_TrStep_'+str(m)+'_.png')
