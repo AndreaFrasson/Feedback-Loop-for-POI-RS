@@ -92,6 +92,7 @@ def compute_rog(interactions, k = None):
     return rog_k
 
 
+
 # count, for each user, how many items in the recommendetion list proposed
 # were already saw. Return the sum
 def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
@@ -106,6 +107,7 @@ def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
     return old_items
 
 
+
 # count, for each user, how many items in the recommendetion list proposed
 # are new Return the sum
 def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
@@ -118,3 +120,27 @@ def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
         new_items += len(rec) - sum(listC)
 
     return new_items
+
+
+# for each user, compute the number of distinct items in his/her history
+def distinct_items(dataset, uid_field, iid_field):
+    df = pd.DataFrame(dataset.inter_feat.numpy())
+    return df.groupby(uid_field)[iid_field].nunique()
+
+
+#può essere calcolato all'inizio e poi aggiornato
+def _explore_return(traj):
+    explore = set()
+    returns = 0
+    for l in traj:
+        if l not in explore:
+            explore.add(l)
+        else:
+            returns+=1
+    return len(explore), returns
+
+
+def get_explore_returns(dataset, uid_field, iid_field):
+    df = pd.DataFrame(dataset.inter_feat.numpy())
+    expl, ret = zip(*df.groupby(uid_field)[iid_field].apply(_explore_return).to_numpy())
+    return expl, ret

@@ -21,7 +21,8 @@ class FeedBack_Loop():
         self.steps = steps 
 
 
-
+    # first creation of the dataset and set the id variables. Split in training, validation and test 
+    # with the configuration settings
     def initialize(self):
         self.dataset = create_dataset(self.config)
 
@@ -32,7 +33,7 @@ class FeedBack_Loop():
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
     
 
-
+    ####
     def loop(self, MaxIt, choice = 'r', tuning = False, hyper_file = None):
         self.metrics = {}
         if tuning:
@@ -115,22 +116,30 @@ class FeedBack_Loop():
     
 
 
+
     # Update the interaction files (for training) in an incremental fashion.
     def update_incremental(self, new_items):
 
+        # translate current training set and validation set in dataframe
         training_df = pd.DataFrame(self.training_set._dataset.inter_feat.numpy())
         validation_df = pd.DataFrame(self.validation_set._dataset.inter_feat.numpy())
 
+        # append the old validation set to the old training set, the timestamp increases by one
         new_train = pd.concat([training_df, validation_df]).sort_values(by = [self.uid_field, self.time_field])
+        # update the training set
         self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
 
+        # update the timestamp for the new validation set
         new_timestamp = self.validation_set._dataset.inter_feat['timestamp'].cpu().numpy() + 1
         valid_user = self.validation_set._dataset.inter_feat['uid'].cpu().numpy()
 
+        # the new validation set is build from the recommendetion made in the last step
         new_valid = pd.DataFrame(list(zip(valid_user, new_items, new_timestamp)), 
                      columns=[self.uid_field, self.iid_field, self.time_field])
         
+        # update the validation set
         self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
+
 
 
 
@@ -170,14 +179,34 @@ class FeedBack_Loop():
         print('ended tuning phase ----')
 
 
+
     def compute_metrics(self, recommended_items):
-        self.metrics['card'] = self.metrics.get('card', []) + [len(set(recommended_items.flatten().numpy()))]
+
+        # distinct items proposed
+        self.metrics['D_prop'] = self.metrics.get('D_prop', []) + [len(set(recommended_items.flatten().numpy()))]
+
+        # radius of gyration
         self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [metrics.compute_rog(self.training_set._dataset)['radius_of_gyration'].mean()]
+        # radius of gyration k = 2
         self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration'].mean()]
-        #self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [metrics.distinct_items(self.training_set._dataset)]
+       
+        # distinct items for each user
+        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [np.mean(metrics.distinct_items(self.training_set._dataset))]
+        # old items suggested
         self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_items_suggested(
                                                                            recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
+        
+        # new items suggested
         self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [metrics.new_items_suggested(
                                                                            recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
+        # mean entropy
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
         self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [np.mean(entropy['entropy'])]
+
+        #explore and return events
+        explore, returns = metrics.get_explore_returns(self.training_set._dataset, self.uid_field, self.iid_field)
+        self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [np.mean(explore)]
+        self.metrics['Ret_ind'] = self.metrics.get('Ret_ind', []) + [np.mean(returns)]
+
+
+
