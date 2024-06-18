@@ -33,7 +33,10 @@ class FeedBack_Loop():
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
     
 
-    ####
+    # Main Loop 
+    # if not specified, the model uses default values, otherwise before going in the loop it performs
+    # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
+    # Then, the dataset is prepared and splitted and the loop starts. 
     def loop(self, MaxIt, choice = 'r', tuning = False, hyper_file = None):
         self.metrics = {}
         if tuning:
@@ -65,18 +68,17 @@ class FeedBack_Loop():
             
 
 
-    
+    # perform a fit step
     def fit(self):
         best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
         return best_valid_score, best_valid_result
 
-
+    # evaluate the model using the test set
     def evaluate(self):
         results = self.trainer.evaluate(self.test_set)
         return results
 
-
-
+    # given an Interaction dataset, predict the next item for each user
     def generate_prediction(self, dataset):
         users = list(dataset.user_counter.keys())
 
@@ -204,6 +206,10 @@ class FeedBack_Loop():
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
         self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [np.mean(entropy['entropy'])]
 
+        # mean entropy (collective)
+        entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.iid_field, self.uid_field)
+        self.metrics['S_col'] = self.metrics.get('S_col', []) + [np.mean(entropy['entropy'])]
+
         # explore and return events (individual)
         explore, returns = metrics.get_explore_returns(self.training_set._dataset, self.uid_field, self.iid_field)
         self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [np.mean(explore)]
@@ -212,9 +218,7 @@ class FeedBack_Loop():
         # individual gini index
         self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [np.mean(metrics.individual_gini(self.training_set._dataset, self.uid_field, self.iid_field))]
 
-        # item gini index
-        self.metrics['Gini_col'] = self.metrics.get('Gini_col', []) + [np.mean(metrics.item_gini(self.training_set._dataset, self.uid_field, self.iid_field))]
-
+        
 
 
 

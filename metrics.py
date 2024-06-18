@@ -191,7 +191,3 @@ def individual_gini(dataset, uid_field, iid_field):
     return df.groupby(uid_field)[iid_field].apply(RelativeFrequency).apply(_gini)
 
 
-
-def item_gini(dataset, uid_field, iid_field):
-    df = pd.DataFrame(dataset.inter_feat.numpy())
-    return df.groupby(iid_field)[uid_field].apply(RelativeFrequency).apply(_gini)
