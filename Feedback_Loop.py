@@ -85,7 +85,7 @@ class FeedBack_Loop():
         # generate synthetic data for the training
         users = torch.tensor(copy.deepcopy(users))
         items = dataset.inter_feat[dataset.iid_field].reshape(len(users), -1)
-        rec_list = self.__prediction(users, items, self.model)
+        rec_list = self.__prediction(users, items)
 
         # translate the location id back to the original embedding
         external_item_list = dataset.id2token(dataset.iid_field, rec_list.cpu())     
