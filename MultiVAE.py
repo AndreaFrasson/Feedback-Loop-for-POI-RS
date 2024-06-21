@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 from Feedback_Loop import FeedBack_Loop
 
-# SETTINGS
+# SETTINGS GENERAL RECOMMENDER
 MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10

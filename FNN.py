@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 from Feedback_Loop import FeedBack_Loop
 
-# SETTINGS
+# SETTINGS CONTEXT BASED
 MODEL = 'FNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
@@ -52,7 +52,7 @@ if __name__ == '__main__':
 
 
     fl = FeedBack_Loop(config_dict, m)
-    fl.loop(MaxIt, 'r', True, 'FNN.hyper')
+    fl.loop(MaxIt, 'r', False, 'FNN.hyper')
 
     # all plot in the same picture
     fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(20, 7))

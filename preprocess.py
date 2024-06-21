@@ -67,7 +67,7 @@ def preprocess(seed = 1234):
     #users
     pd.DataFrame(set(red_df['uid:token']), columns=['uid:token']).to_csv('foursquare/foursquare.user', index=False, sep = ',')
     #items
-    items = red_df[['venue_id:token', 'venue_category_name:token', 'lat:float', 'lon:float']].drop_duplicates(subset=['venue_id:token', 'venue_category_name:token'])
+    items = red_df[['venue_id:token', 'venue_category_name:token', 'lat:float', 'lon:float']].drop_duplicates(subset=['venue_id:token'])
     items.sort_values(by = 'venue_id:token', inplace=True)
     items.to_csv('foursquare/foursquare.item', index = False, sep = ',')
 

@@ -108,7 +108,17 @@ class FeedBack_Loop():
         })
 
         with torch.no_grad():
-            scores = self.model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
+            try:  # if model have full sort predict
+                scores = self.model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
+            except NotImplementedError:  # if model do not have full sort predict
+                len_input_inter = len(input_inter)
+                input_inter = input_inter.repeat(self.dataset.item_num)
+                input_inter.update(self.dataset.get_item_feature().repeat(len_input_inter))  # join item feature
+                scores = self.model.predict(input_inter)
+            
+            scores = scores.view(-1, self.dataset.item_num)
+        print(scores.shape)
+        print(scores)
         
         # get the 10 items with highest scores
         rec_list = np.argsort(scores, axis = 1)[:, -10:]
