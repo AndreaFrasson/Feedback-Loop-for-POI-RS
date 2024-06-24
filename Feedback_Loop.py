@@ -117,8 +117,6 @@ class FeedBack_Loop():
                 scores = self.model.predict(input_inter)
             
             scores = scores.view(-1, self.dataset.item_num)
-        print(scores.shape)
-        print(scores)
         
         # get the 10 items with highest scores
         rec_list = np.argsort(scores, axis = 1)[:, -10:]
