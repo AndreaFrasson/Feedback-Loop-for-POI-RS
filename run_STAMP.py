@@ -11,7 +11,8 @@ DATA_PATH = os.getcwd()
 TOP_K = 10
 DATASET = 'foursquare'
 EPOCHS = 30
-DEVICE_ID = '0'
+DEVICE_ID = '0',
+min_items_occurrences, min_users_interactions = 1, 1
 
 # Default parameters
 LEARNING_RATE = 0.005
@@ -42,6 +43,12 @@ if __name__ == '__main__':
             'use_gpu': len(DEVICE_ID) > 0,
             'device_id': DEVICE_ID,
             'learnign_rate': LEARNING_RATE,
+            'train_neg_sample_args' : None,
+            'user_inter_num_interval': f"[{min_users_interactions},inf)",
+            'item_inter_num_interval': f"[{min_items_occurrences},inf)",
+            'MAX_ITEM_LIST_LENGTH': 1500,
+            'loss_type': 'BPR',
+            'ITEM_LIST_LENGTH_FIELD': item_length
         }
 
 
