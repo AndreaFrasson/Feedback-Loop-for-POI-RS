@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
             # no timestamp
             'load_col': {
-                'inter': ['uid', 'venue_id'],
+                'inter': ['uid', 'venue_id', 'timestamp'],
                 'item': ['venue_id','lat', 'lon', 'venue_category_name']
             },
 
