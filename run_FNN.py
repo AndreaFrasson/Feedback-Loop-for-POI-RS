@@ -53,7 +53,7 @@ if __name__ == '__main__':
             # no timestamp
             'load_col': {
                 'inter': ['uid', 'venue_id'],
-                'item': ['lat', 'lon', 'venue_category_name']
+                'item': ['venue_id','lat', 'lon', 'venue_category_name']
             },
 
             'learning_rate': LEARNING_RATE,
