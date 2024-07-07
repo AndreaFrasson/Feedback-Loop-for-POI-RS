@@ -51,6 +51,8 @@ class FeedBack_Loop():
             if c % self.steps == 0:
                 # get model
                 print(self.config['model'])
+                print(get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device']))
+
                 self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
