@@ -42,8 +42,6 @@ if __name__ == '__main__':
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
             'device_id': DEVICE_ID,
-            'USER_ID_FIELD': 'uid',
-            'ITEM_ID_FIELD': 'venue_id',
 
             # label must be present
             'train_neg_sample_args': {
