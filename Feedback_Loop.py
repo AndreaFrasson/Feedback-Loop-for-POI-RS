@@ -50,7 +50,6 @@ class FeedBack_Loop():
         for c in tqdm(range(MaxIt)):
             if c % self.steps == 0:
                 # get model
-                print(self.config['model'])
                 print(get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device']))
 
                 self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
@@ -198,6 +197,7 @@ class FeedBack_Loop():
         hp.run()
         self.config_dict.update(hp.best_params)
         self.config = Config(config_file_list=['environment.yaml'], config_dict=self.config_dict)
+        print(self.config)
         print('ended tuning phase ----')
 
 
