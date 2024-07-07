@@ -50,6 +50,7 @@ class FeedBack_Loop():
         for c in tqdm(range(MaxIt)):
             if c % self.steps == 0:
                 # get model
+                print(self.config['device'])
                 self.model = get_model(self.config['model'])(self.config, self.training_set.dataset).to(self.config['device'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)

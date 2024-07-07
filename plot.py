@@ -3,6 +3,8 @@ import numpy as np
 import json
 
 
+MODEL = 'Random'
+
 def make_plot(x, y, title, vl = 0):
 
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -10,16 +12,17 @@ def make_plot(x, y, title, vl = 0):
     ax.plot(x, y, color = 'blue', linestyle = 'dashed')
     ax.set_xticks(range(len(x)))
     if vl > 0:
+        ax.set_xlabel('Epochs', size = 20)
         ax.vlines(np.arange(len(x), step=vl), ymin=min(y), ymax= max(y), colors='red',linestyles='dotted')
     
-    ax.set_xlabel('User Degree', fontsize=30)
-    ax.set_ylabel('Frequency', fontsize=30)
-    ax.tick_params(axis='both', which='major', labelsize=24)
+    else:
+        ax.set_xlabel('Training Step', size = 20)
+
+    ax.tick_params(axis='both', which='major', labelsize=20)
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
-    fig.savefig('plot/'+ title +'_Random_5-20.png')
-
+    fig.savefig('plot/'+ title +'_'+MODEL+'_5-20.png')
 
     return 
 
@@ -27,7 +30,7 @@ def make_plot(x, y, title, vl = 0):
 if __name__ == '__main__':
 
     # reading the data from the file 
-    with open('output/Random_5-20.txt', 'r') as f:
+    with open('output/'+MODEL+'_5-20.txt', 'r') as f:
         data = f.read().replace('\'', '\"')
       
     # reconstructing the data as a dictionary 
@@ -47,7 +50,7 @@ if __name__ == '__main__':
 
             case 'rog_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Total Radius Of Gyration'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -56,7 +59,7 @@ if __name__ == '__main__':
 
             case 'rog_ind_2':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = '2k Radius Of Gyration'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -65,7 +68,7 @@ if __name__ == '__main__':
 
             case 'D_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Distinct Location Visited'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -74,7 +77,7 @@ if __name__ == '__main__':
 
             case 'L_old_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Old Location Suggested'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -83,7 +86,7 @@ if __name__ == '__main__':
 
             case 'L_new_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'New Location Suggested'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -92,7 +95,7 @@ if __name__ == '__main__':
 
             case 'S_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Individual Entropy'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -101,7 +104,7 @@ if __name__ == '__main__':
 
             case 'S_col':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Collective Entropy'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -110,7 +113,7 @@ if __name__ == '__main__':
 
             case 'Expl_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Exploring Events'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -119,7 +122,7 @@ if __name__ == '__main__':
 
             case 'Ret_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Returning Events'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
@@ -128,13 +131,30 @@ if __name__ == '__main__':
 
             case 'Gini_ind':
                 # Diversity of Items
-                title = 'Diversity of Items'
+                title = 'Individual Gini'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = 5
 
                 make_plot(x, y, title, vl)
-                
+
+            case 'test_hit':
+               # hit rate
+                title = 'Hit Rate'
+                x = [i for i in range(len(js[k]))]
+                y = js[k]
+
+                make_plot(x, y, title)
+
+            case 'test_precision':
+                # hit rate
+                title = 'Precision'
+                x = [i for i in range(len(js[k]))]
+                y = js[k]
+
+                make_plot(x, y, title)
+
             case _:
-               # hit and precision 
-                continue
+                print('metric not implemented')
+
+                
