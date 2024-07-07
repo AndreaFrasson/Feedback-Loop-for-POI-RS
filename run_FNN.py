@@ -18,7 +18,6 @@ DROPOUT_PROB = 0.1
 MLP_HIDDEN_SIZE = [128,256,128]
 
 
-
 if __name__ == '__main__':
     # total arguments
     n = len(sys.argv)

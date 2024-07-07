@@ -114,7 +114,7 @@ class FeedBack_Loop():
                 len_input_inter = len(input_inter)
                 input_inter = input_inter.repeat(self.dataset.item_num)
                 input_inter.update(self.dataset.get_item_feature().repeat(len_input_inter))  # join item feature
-                scores = self.model.predict(input_inter)
+                scores = self.model.cpu().predict(input_inter)
             
             scores = scores.view(-1, self.dataset.item_num)
         
