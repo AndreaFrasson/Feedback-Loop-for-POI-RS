@@ -109,12 +109,12 @@ class FeedBack_Loop():
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                scores = self.model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
+                scores = self.model.full_sort_predict(input_inter.to('cuda:'+self.config['gpu_id'])).cpu().reshape((len(users), -1))
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(input_inter)
                 input_inter = input_inter.repeat(self.dataset.item_num)
                 input_inter.update(self.dataset.get_item_feature().repeat(len_input_inter))  # join item feature
-                scores = self.model.predict(input_inter.cpu())
+                scores = self.model.predict(input_inter.to('cuda:'+self.config['gpu_id']))
             
             scores = scores.view(-1, self.dataset.item_num)
         
