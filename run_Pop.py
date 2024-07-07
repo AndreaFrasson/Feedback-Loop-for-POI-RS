@@ -1,13 +1,5 @@
-import utils as u
 from preprocess import preprocess
-import metrics
-import pandas as pd
-import numpy as np
-from recbole.data import data_preparation, create_dataset
-from recbole.quick_start.quick_start import get_model, get_trainer
 import os
-from tqdm import tqdm
-import matplotlib.pyplot as plt
 import sys
 from Feedback_Loop import FeedBack_Loop
 
@@ -22,7 +14,16 @@ DEVICE_ID = '0'
 # Default parameters
 
 
-def run(m = 3, MaxIt = 20, tuning = False):
+
+if __name__ == '__main__':
+    # total arguments
+    n = len(sys.argv)
+    if n < 3:
+        m = 5
+        MaxIt = 20
+    else:
+        m = int(sys.argv[1])
+        MaxIt = int(sys.argv[2])
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
@@ -41,21 +42,8 @@ def run(m = 3, MaxIt = 20, tuning = False):
 
 
     fl = FeedBack_Loop(config_dict, m)
-    fl.loop(MaxIt, 'c', tuning)
+    fl.loop(MaxIt, 'r', False)
 
-    print(fl.metrics['rog_ind'])
-
-
-
-
-if __name__ == '__main__':
-    # total arguments
-    n = len(sys.argv)
-    if n < 3:
-        m = 5
-        MaxIt = 20
-    else:
-        m = int(sys.argv[1])
-        MaxIt = int(sys.argv[2])
-
-    run(m, MaxIt)
+    # save output
+    with open('output/'+fl.config['model']+'_'+str(m)+'-'+str(MaxIt)+'.txt','w') as data:  
+      data.write(str(fl.metrics))
