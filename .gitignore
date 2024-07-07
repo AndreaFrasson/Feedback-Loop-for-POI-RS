@@ -4,4 +4,4 @@ saved/*
 **.ipynb
 cache/*
 __pycache__/*
-Grafici_tesi/*
+plot/*
