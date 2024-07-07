@@ -13,6 +13,9 @@ DATASET = 'foursquare'
 EPOCHS = 30
 DEVICE_ID = '0'
 
+LEARNING_RATE = 0.01
+DROPOUT_PROB = 0.1
+MLP_HIDDEN_SIZE = [128,256,128]
 
 
 
@@ -39,6 +42,7 @@ if __name__ == '__main__':
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
             'device_id': DEVICE_ID,
+
             # label must be present
             'train_neg_sample_args': {
                 'uniform': 1
@@ -46,8 +50,13 @@ if __name__ == '__main__':
 
             # no timestamp
             'load_col': {
-                'inter': ['uid', 'venue_id']
-            }
+                'inter': ['uid', 'venue_id'],
+                'item': ['lat', 'lon', 'venue_category_name']
+            },
+
+            'learning_rate': LEARNING_RATE,
+            'dropout_prob': DROPOUT_PROB,
+            'mlp_hidden_size': MLP_HIDDEN_SIZE
         }
 
 
@@ -97,4 +106,4 @@ if __name__ == '__main__':
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.savefig('plot/run_FNN_TrStep_'+str(m)+'_.png')
+    plt.savefig('plot/run_FNN_TrStep_'+str(m)+'_'+str(MaxIt)+'.png')

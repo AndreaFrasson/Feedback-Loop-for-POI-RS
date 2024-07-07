@@ -88,4 +88,4 @@ if __name__ == '__main__':
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.savefig('plot/run_RAND_TrStep_'+str(m)+'_.png')
+    plt.savefig('plot/run_RAND_TrStep_'+str(m)+'_'+str(MaxIt)+'.png')

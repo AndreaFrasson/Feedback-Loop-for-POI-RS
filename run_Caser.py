@@ -5,18 +5,18 @@ import matplotlib.pyplot as plt
 import sys
 from Feedback_Loop import FeedBack_Loop
 
-# SETTINGS GENERAL RECOMMENDER
-MODEL = 'STAMP'
+# SETTINGS
+MODEL = 'Caser'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
 EPOCHS = 30
-DEVICE_ID = '0',
-min_items_occurrences, min_users_interactions = 1, 1
+DEVICE_ID = '0'
 
 # Default parameters
-LEARNING_RATE = 0.005
-
+LEARNING_RATE = 0.0014441770317725243
+REG_WEIGHTS = 1e-4
+DROPOUT_PROB = 0.1
 
 
 if __name__ == '__main__':
@@ -43,17 +43,15 @@ if __name__ == '__main__':
             'use_gpu': len(DEVICE_ID) > 0,
             'device_id': DEVICE_ID,
             'learnign_rate': LEARNING_RATE,
-            'train_neg_sample_args' : None,
-            'user_inter_num_interval': f"[{min_users_interactions},inf)",
-            'item_inter_num_interval': f"[{min_items_occurrences},inf)",
-            'MAX_ITEM_LIST_LENGTH': 1500,
-            'loss_type': 'BPR',
-            'ITEM_LIST_LENGTH_FIELD': item_length
+            'reg_weights': REG_WEIGHTS,
+            'drpout_prob':DROPOUT_PROB,
+            'train_neg_sample_args': None,
+            'MAX_ITEM_LIST_LENGTH': 50,
         }
 
 
     fl = FeedBack_Loop(config_dict, m)
-    fl.loop(MaxIt, 'r', True, 'STAMP.hyper')
+    fl.loop(MaxIt, 'r', True, 'Caser.hyper')
 
     # all plot in the same picture
     fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(20, 7))
@@ -98,4 +96,4 @@ if __name__ == '__main__':
     # Adjust layout
     plt.tight_layout()
     # Show plots
-    plt.savefig('plot/run_STAMP_TrStep_'+str(m)+'_'+str(MaxIt)+'.png')
+    plt.savefig('plot/run_Caser_TrStep_'+str(m)+'_'+str(MaxIt)+'.png')
