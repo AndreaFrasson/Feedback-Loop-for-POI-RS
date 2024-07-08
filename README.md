@@ -1,7 +1,7 @@
-Pip install recbole
-Pip install skmob
-Pip install —upgrade numpy==1.26.4
-Pip install ray
-Pip install ray[tune]
-Pip install means_pytorch
-Pip install hyperopt
+Pip install recbole <br>
+Pip install skmob <br>
+Pip install —upgrade numpy==1.26.4 <br>
+Pip install ray <br>
+Pip install ray[tune] <br>
+Pip install means_pytorch <br>
+Pip install hyperopt <br>
