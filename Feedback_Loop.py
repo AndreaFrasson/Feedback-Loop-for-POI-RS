@@ -195,7 +195,12 @@ class FeedBack_Loop():
         print('starting tuning phase -------')
         hp.run()
         self.config_dict.update(hp.best_params)
-        self.config_dict['mlp_hidden_size'] = list(self.config_dict['mlp_hidden_size'])
+
+        # checking no tuple, need all list
+        for k in self.config_dict.keys():
+            if isinstance(self.config_dict[k], tuple):
+                self.config_dict[k] = list(self.config_dict[k])
+
         self.config = Config(config_file_list=['environment.yaml'], config_dict=self.config_dict)
 
 
