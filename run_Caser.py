@@ -4,7 +4,7 @@ import sys
 from Feedback_Loop import FeedBack_Loop
 
 # SETTINGS
-MODEL = 'Caser'
+MODEL = 'GRU4Rec'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
