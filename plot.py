@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'Random'
+MODEL = 'Pop'
 
 def make_plot(x, y, title, vl = 0):
 
