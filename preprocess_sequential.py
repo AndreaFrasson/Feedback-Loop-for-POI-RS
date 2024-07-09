@@ -84,7 +84,7 @@ def preprocess(seed = 1234):
     items.sort_values(by = 'item_id:token', inplace=True)
     items.to_csv('foursquare/foursquare.item', index = False, sep = ',')
 
-    mapping_cat = dict(zip(red_df['venue_id:token'], red_df['venue_category_name:token']))
+    mapping_cat = dict(zip(red_df['item_id:token'], red_df['venue_category_name:token']))
     with open('id_category.pkl', 'wb') as f:
         pickle.dump(mapping_cat, f)
 
