@@ -47,7 +47,7 @@ if __name__ == '__main__':
             'LIST_SUFFIX': '_list',
             'MAX_ITEM_LIST_LENGTH': 50,
             'load_col': {
-                'inter': ['uid', 'venue_id', 'timestamp'],
+                'inter': ['uid', 'item_id', 'timestamp'],
                 'item': ['venue_id','lat', 'lon','venue_category_name']
             },
     }
