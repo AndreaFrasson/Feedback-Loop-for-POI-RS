@@ -52,10 +52,17 @@ def preprocess(seed = 1234):
     red_df.columns = ['uid:token', 'item_id:token', 'venue_category_name:token', 'lat:float', 'lon:float', 'timestamp:token']
 
 
-    item_id_list = list(red_df['item_id:token'].unique().values)
+    item_id_list = list(red_df.groupby('uid:token')['item_id:token'].unique().values)
 
+    item_column = []
+    for u in red_df['uid:token']:
+        s = ''
+        for e in item_id_list[u-1]:
+            s  += str(e) + ' '
+            
+        item_column.append(s)
 
-    red_df['item_id_list:token_seq'] = item_id_list * len(red_df)
+    red_df['item_id_list:token_seq'] = item_column
 
     train_users = np.random.choice(users, int(len(users)*training_ratio), replace=False)
 
