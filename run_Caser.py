@@ -45,7 +45,11 @@ if __name__ == '__main__':
             'drpout_prob':DROPOUT_PROB,
             'train_neg_sample_args': None,
             'MAX_ITEM_LIST_LENGTH': 50,
-        }
+            'load_col': {
+                'inter': ['uid', 'venue_id', 'timestamp', 'item_id_list'],
+                'item': ['venue_id','lat', 'lon', 'venue_category_name']
+            },
+    }
 
 
     fl = FeedBack_Loop(config_dict, m)
