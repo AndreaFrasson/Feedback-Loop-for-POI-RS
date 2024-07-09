@@ -45,7 +45,7 @@ if __name__ == '__main__':
             'drpout_prob':DROPOUT_PROB,
             'train_neg_sample_args': None,
             'LIST_SUFFIX': '_list',
-            'MAX_ITEM_LIST_LENGTH': 50,
+            'MAX_ITEM_LIST_LENGTH': 10,
             'load_col': {
                 'inter': ['uid', 'item_id', 'timestamp', 'item_id_list'],
                 'item': ['item_id','lat', 'lon','venue_category_name']
