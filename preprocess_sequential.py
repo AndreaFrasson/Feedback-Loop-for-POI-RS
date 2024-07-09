@@ -90,8 +90,8 @@ def preprocess(seed = 1234):
 
     #interaction
     train[['uid:token', 'venue_id:token', 'timestamp:token', 'venue_id_list:token_seq']].to_csv('foursquare/foursquare.part1.inter', index = False, sep = ',')
-    validation[['uid:token', 'venue_id:token', 'timestamp:token', 'item_id_list:token_seq']].to_csv('foursquare/foursquare.part2.inter', index = False, sep = ',')
-    test[['uid:token', 'venue_id:token', 'timestamp:token', 'item_id_list:token_seq']].to_csv('foursquare/foursquare.part3.inter', index = False, sep = ',')
+    validation[['uid:token', 'venue_id:token', 'timestamp:token', 'venue_id_list:token_seq']].to_csv('foursquare/foursquare.part2.inter', index = False, sep = ',')
+    test[['uid:token', 'venue_id:token', 'timestamp:token', 'venue_id_list:token_seq']].to_csv('foursquare/foursquare.part3.inter', index = False, sep = ',')
 
 
 
