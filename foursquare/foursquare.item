@@ -1,4 +1,4 @@
-venue_id:token,venue_category_name:token,lat:float,lon:float
+item_id:token,venue_category_name:token,lat:float,lon:float
 0,159,40.73359624463056,-74.00313913822174
 1,114,40.75810221550426,-73.9757341687067
 2,29,40.65276619423542,-74.00309176330678

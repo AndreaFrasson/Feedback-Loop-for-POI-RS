@@ -1,11 +1,11 @@
 # Environment settings
 USER_ID_FIELD: uid
-ITEM_ID_FIELD: venue_id
+ITEM_ID_FIELD: item_id
 TIME_FIELD: timestamp
 
 load_col:
-    inter: [uid, venue_id, timestamp]
-    item: [venue_id, venue_category_name, lat, lon]
+    inter: [uid, item_id, timestamp]
+    item: [item_id, venue_category_name, lat, lon]
 
 save_dataset: False
 save_dataloaders: False
