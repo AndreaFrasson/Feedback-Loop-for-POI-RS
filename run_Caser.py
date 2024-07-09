@@ -44,10 +44,11 @@ if __name__ == '__main__':
             'reg_weights': REG_WEIGHTS,
             'drpout_prob':DROPOUT_PROB,
             'train_neg_sample_args': None,
+            'LIST_SUFFIX': '_list',
             'MAX_ITEM_LIST_LENGTH': 50,
             'load_col': {
-                'inter': ['uid', 'venue_id', 'timestamp', 'item_id_list'],
-                'item': ['venue_id','lat', 'lon', 'venue_category_name']
+                'inter': ['uid', 'venue_id', 'timestamp'],
+                'item': ['venue_id','lat', 'lon','venue_category_name']
             },
     }
 
