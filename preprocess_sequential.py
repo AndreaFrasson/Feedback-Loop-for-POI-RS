@@ -52,7 +52,7 @@ def preprocess(seed = 1234):
     red_df.columns = ['uid:token', 'item_id:token', 'venue_category_name:token', 'lat:float', 'lon:float', 'timestamp:token']
 
 
-    item_id_list = list(red_df.groupby('uid:token')['venue_id:token'].unique().values)
+    item_id_list = list(red_df.groupby('uid:token')['item_id:token'].unique().values)
 
     item_column = []
     for u in red_df['uid:token']:
