@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'Pop'
+MODEL = 'MultiVAE'
 
 def make_plot(x, y, title, vl = 0):
 
@@ -11,6 +11,9 @@ def make_plot(x, y, title, vl = 0):
 
     ax.plot(x, y, color = 'blue', linestyle = 'dashed')
     ax.set_xticks(range(len(x)))
+
+    ax.xaxis.set_major_locator(plt.MaxNLocator(3))
+
     if vl > 0:
         ax.set_xlabel('Epochs', size = 20)
         ax.vlines(np.arange(len(x), step=vl), ymin=min(y), ymax= max(y), colors='red',linestyles='dotted')
