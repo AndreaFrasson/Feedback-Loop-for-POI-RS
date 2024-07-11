@@ -61,8 +61,9 @@ class FeedBack_Loop():
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
 
             predictions, external_ids = self.generate_prediction(self.training_set._dataset)
+
             # choose one item
-            chosen_tokens, chosen_ids = utils.choose_item(external_ids, self.training_set._dataset, choice)
+            chosen_ids, chosen_tokena = utils.choose_item(external_ids, self.training_set._dataset, choice)
 
             self.update_incremental(chosen_ids)
             self.compute_metrics(predictions)
@@ -102,11 +103,6 @@ class FeedBack_Loop():
     #               match the shape (len(users), len(set(items)))
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
     def __prediction(self, users, items):
-        #make prediction for users
-        input_inter = Interaction({
-            'uid': users,
-            'venue_id': items.reshape(len(users), -1),
-        })
 
         with torch.no_grad():
             try:  # if model have full sort predict
