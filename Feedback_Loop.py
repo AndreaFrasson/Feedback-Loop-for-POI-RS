@@ -106,7 +106,7 @@ class FeedBack_Loop():
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                scores = self.model.cpu().full_sort_predict(self.training_set._dataset.inter_feat.cpu()).cpu().reshape((len(users), -1))
+                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat).cpu().reshape((len(users), -1))
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(input_inter)
                 input_inter = input_inter.repeat(self.dataset.item_num)
