@@ -9,7 +9,7 @@ DATA_PATH = os.getcwd()
 TOP_K = 10
 DATASET = 'foursquare'
 EPOCHS = 30
-DEVICE_ID = '0'
+DEVICE_ID = '1'
 
 # Default parameters
 LEARNING_RATE = 0.005
