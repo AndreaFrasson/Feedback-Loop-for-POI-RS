@@ -4,6 +4,8 @@ import json
 
 
 MODEL = 'MultiVAE'
+STEP = 2
+MAXIT = 20
 
 def make_plot(x, y, title, vl = 0):
 
@@ -25,7 +27,7 @@ def make_plot(x, y, title, vl = 0):
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
-    fig.savefig('plot/'+ title +'_'+MODEL+'_5-20.png')
+    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.png')
 
     return 
 
@@ -33,7 +35,7 @@ def make_plot(x, y, title, vl = 0):
 if __name__ == '__main__':
 
     # reading the data from the file 
-    with open('output/'+MODEL+'_5-20.txt', 'r') as f:
+    with open('output/'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.txt', 'r') as f:
         data = f.read().replace('\'', '\"')
       
     # reconstructing the data as a dictionary 
@@ -47,7 +49,7 @@ if __name__ == '__main__':
                 title = 'Diversity of Items'
                 x = [i for i in range(len(js[k]))]
                 y = js[k]
-                vl = 5
+                vl = STEP
 
                 make_plot(x, y, title, vl)
 
