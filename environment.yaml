@@ -18,7 +18,7 @@ reproducibility: True
 
 
 # Evaluation config
-metrics: ['Hit', 'Precision']
+metrics: ['Hit', 'Precision', 'Recall']
 valid_metric: Hit@10
 metric_decimal_place: 4
 
