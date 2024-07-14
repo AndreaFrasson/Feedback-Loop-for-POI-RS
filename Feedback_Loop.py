@@ -82,6 +82,7 @@ class FeedBack_Loop():
 
     # given an Interaction dataset, predict the next item for each user
     def generate_prediction(self, dataset):
+        torch.cuda.empty_cache()
         users = list(dataset.user_counter.keys())
 
         # generate synthetic data for the training

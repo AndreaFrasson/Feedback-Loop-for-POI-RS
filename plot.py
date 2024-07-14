@@ -4,7 +4,7 @@ import json
 
 
 MODEL = 'MultiVAE'
-STEP = 4
+STEP = 6
 MAXIT = 20
 
 def make_plot(x, y, title, ylab = '', vl = 0):
