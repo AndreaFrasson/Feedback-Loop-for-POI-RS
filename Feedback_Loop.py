@@ -63,7 +63,7 @@ class FeedBack_Loop():
             predictions, external_ids = self.generate_prediction(self.training_set._dataset)
 
             # choose one item
-            chosen_ids, chosen_tokena = utils.choose_item(external_ids, self.training_set._dataset, choice)
+            chosen_ids, chosen_token = utils.choose_item(external_ids, self.training_set._dataset, choice)
 
             self.update_incremental(chosen_ids)
             self.compute_metrics(predictions)
@@ -107,19 +107,25 @@ class FeedBack_Loop():
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat).cpu().reshape((len(users), -1))
+                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat)
+                scores = torch.reshape(scores, (len(users), -1))
+
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(input_inter)
                 input_inter = input_inter.repeat(self.dataset.item_num)
                 input_inter.update(self.dataset.get_item_feature().repeat(len_input_inter))  # join item feature
-                scores = self.model.predict(self.training_set._dataset.inter_feat).cpu()
+                scores = self.model.predict(self.training_set._dataset.inter_feat)
+                scores = torch.reshape(scores, (len(users), -1))
             
             scores = scores.view(-1, self.dataset.item_num)
         
+        #res = scores.cpu() 
+        #del scores
+        torch.cuda.empty_cache()
         # get the 10 items with highest scores
-        rec_list = np.argsort(scores, axis = 1)[:, -10:]
+        #rec_list = np.argsort(res, axis = 1)[:, -10:]
 
-        return rec_list
+        return torch.argsort(scores.cpu(), dim = 1)[:, -10:]
     
 
 
