@@ -3,8 +3,8 @@ import numpy as np
 import json
 
 
-MODEL = 'MultiVAE'
-STEP = 6
+MODEL = 'Random'
+STEP = 2
 MAXIT = 20
 
 def make_plot(x, y, title, ylab = '', vl = 0):
