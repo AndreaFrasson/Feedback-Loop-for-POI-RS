@@ -172,6 +172,15 @@ if __name__ == '__main__':
 
                 make_plot(x, y, title, ylab)
 
+            case 'test_rec':
+                # Diversity of Items
+                title = 'Recall'
+                ylab = ''
+                x = [i for i in range(len(js[k]))]
+                y = js[k]
+
+                make_plot(x, y, title, ylab)
+
             case _:
                 print('metric not implemented')
 
