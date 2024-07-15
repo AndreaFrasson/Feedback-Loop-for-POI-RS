@@ -50,7 +50,6 @@ class FeedBack_Loop():
         for c in tqdm(range(MaxIt)):
             if c % self.steps == 0:
                 # get model
-
                 self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
@@ -138,7 +137,10 @@ class FeedBack_Loop():
         except:
             new_train = pd.concat([training_df, validation_df]).sort_values(by = [self.uid_field])
         # update the training set
-        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
+        #self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
+        #save file
+        new_train.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
+        new_train.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part1.inter', index=False)
 
         # update the timestamp for the new validation set
         valid_user = self.validation_set._dataset.inter_feat['uid'].cpu().numpy()
@@ -156,7 +158,16 @@ class FeedBack_Loop():
                         columns=[self.uid_field, self.iid_field])
         
         # update the validation set
-        self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
+        #self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
+        #save file
+        new_valid.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
+        new_valid.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part2.inter', index=False)
+
+        del self.training_set
+        del self.validation_set
+        torch.cuda.empty_cache()
+
+        self.initialize()
 
 
 
