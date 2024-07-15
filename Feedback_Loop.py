@@ -169,6 +169,7 @@ class FeedBack_Loop():
 
         del self.training_set
         del self.validation_set
+        
         torch.cuda.empty_cache()
 
         self.initialize()
