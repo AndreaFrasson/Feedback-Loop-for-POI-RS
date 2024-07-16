@@ -41,8 +41,8 @@ if __name__ == '__main__':
         }
 
 
-    fl = FeedBack_Loop(config_dict, m)
-    fl.loop(MaxIt, 'r', False)
+    fl = FeedBack_Loop(config_dict)
+    fl.loop(20,2, user_frac=1)
 
     # save output
     with open('output/'+fl.config['model']+'_'+str(m)+'-'+str(MaxIt)+'.txt','w') as data:  
