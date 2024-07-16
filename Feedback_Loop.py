@@ -110,8 +110,6 @@ class FeedBack_Loop():
         return scores
     
 
-
-
     # given a list of users, a matrix of items visited, and the model make the prediction for each user.
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
     def __prediction(self):
@@ -130,10 +128,10 @@ class FeedBack_Loop():
             try:  # if model have full sort predict
                 scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
             except NotImplementedError:  # if model do not have full sort predict
-                len_input_inter = len(self.training_set._dataset.inter_feat)
-                input_inter = self.training_set._dataset.inter_feat.repeat(self.dataset.item_num)
-                input_inter.update(self.dataset.get_item_feature().repeat(len_input_inter))  # join item feature
-                scores = self.model.predict(self.training_set._dataset.inter_feat).cpu()
+                len_input_inter = len(input_inter)
+                input_inter = input_inter.repeat(self.training_set._dataset.item_num)
+                input_inter.update(self.training_set._dataset.get_item_feature().repeat(len_input_inter))  # join item feature
+                scores = self.model.predict(input_inter)
             
             scores = scores.view(-1, self.dataset.item_num)
         
