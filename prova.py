@@ -10,8 +10,7 @@ if __name__ =='__main__':
         'USER_ID_FIELD': 'uid',
         'ITEM_ID_FIELD': 'item_id',
         'TIME_FIELD': 'timestamp',
-        'load_col': {'inter': ['uid', 'item_id', 'timestamp', 'item_id_list']},
-        'train_neg_sample_args': None,
+        'load_col': {'inter': ['uid', 'item_id', 'timestamp']},
         'field_separator': ',',
         'benchmark_filename': ['part1', 'part2', 'part3'],
         'epochs': 20,
@@ -19,9 +18,9 @@ if __name__ =='__main__':
             'group_by': 'user',
             'order': 'TO', # temporal order
             'split': {'LS': 'valid_and_test'}, # leave one out
-            'mode': 'full'
+            'mode': 'uni1'
         },
-        'epochs':1
+        'eval_batch_size': 4096
     }
 
     fl = FeedBack_Loop(parameter_dict)

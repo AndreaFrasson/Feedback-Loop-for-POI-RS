@@ -8,7 +8,7 @@ MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 30
+EPOCHS = 20
 DEVICE_ID = '0'
 
 # Default parameters

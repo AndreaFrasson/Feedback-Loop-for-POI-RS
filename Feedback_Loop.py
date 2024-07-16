@@ -41,6 +41,7 @@ class FeedBack_Loop():
         self.epochs = epochs
         self.dtrain = dtrain
         self.metrics = {}
+
         if tuning:
             if not isinstance(hyper_file, str):
                 raise NotImplementedError
@@ -52,8 +53,12 @@ class FeedBack_Loop():
         for c in tqdm(range(self.epochs)):
             
             #extract user that will see the recommendations
-            user_acc = np.random.choice(self.training_set._dataset.inter_feat[self.uid_field],
-                                        len(self.training_set._dataset.inter_feat[self.uid_field]) * user_frac)
+            if user_frac < 1:
+                user_acc = np.random.choice(self.training_set._dataset.inter_feat[self.uid_field],
+                                            int(len(self.training_set._dataset.inter_feat[self.uid_field]) * user_frac)) 
+                user_acc -=1
+            else:
+                user_acc = None
 
             # every delta_train epochs, retrain of the model
             if c % self.dtrain == 0:
@@ -68,14 +73,15 @@ class FeedBack_Loop():
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
-                self.compute_metrics(user_acc)
 
-
-            predictions, external_ids = self.generate_prediction(self.training_set._dataset)
+            predictions = self.generate_prediction(self.training_set._dataset, user_acc)
             # choose one item
-            chosen_tokens, chosen_ids = utils.choose_item(external_ids, self.training_set._dataset, choice)
+            chosen_items = utils.choose_item(predictions, self.training_set._dataset, choice)
 
-            self.update_incremental(chosen_ids)
+            if c % self.dtrain == 0:
+                self.compute_metrics()
+
+            self.update_incremental(chosen_items)
             
 
 
@@ -83,44 +89,46 @@ class FeedBack_Loop():
     def fit(self):
         best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
         return best_valid_score, best_valid_result
+    
 
     # evaluate the model using the test set
     def evaluate(self):
         results = self.trainer.evaluate(self.test_set)
         return results
+    
 
-    # given an Interaction dataset, predict the next item for each user
-    def generate_prediction(self, dataset):
+
+    def generate_prediction(self, dataset, user_acc = None):
+
         torch.cuda.empty_cache()
-        users = list(dataset.user_counter.keys())
+        scores = self.__prediction()
 
-        # generate synthetic data for the training
-        users = torch.tensor(copy.deepcopy(users))
-        items = dataset.inter_feat[dataset.iid_field].reshape(len(users), -1)
-        scores = self.__prediction(users, items)
+        if user_acc is not None:
+            for u in user_acc:
+                scores[u] = -1
 
-        rec_list = scores.cpu()
-        del scores
-
-        # translate the location id back to the original embedding
-        external_item_list = dataset.id2token(dataset.iid_field, rec_list) 
-           
-        
-        return rec_list, np.apply_along_axis(utils._from_ids_to_int, 1, external_item_list)
+        return scores
     
 
 
 
     # given a list of users, a matrix of items visited, and the model make the prediction for each user.
-    # @input users: list, internal user ids
-    # @input items: torch.Tensor, interactions between users and items. Should be reshaped to 
-    #               match the shape (len(users), len(set(items)))
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
-    def __prediction(self, users, items):
+    def __prediction(self):
+
+        users = len(self.training_set._dataset.user_counter.keys())
+
+        input_inter = Interaction({
+            'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
+            'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
+            'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp']))
+        })
+
+        input_inter.to(self.model.device)
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat).cpu().reshape((len(users), -1))
+                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(self.training_set._dataset.inter_feat)
                 input_inter = self.training_set._dataset.inter_feat.repeat(self.dataset.item_num)
@@ -131,8 +139,9 @@ class FeedBack_Loop():
         
         # get the 10 items with highest scores
         #rec_list = np.argsort(scores, axis = 1)[:, -10:]
+        topk_score, topk_iid_list  = torch.topk(scores, 10)
 
-        return scores.argsort(dim = 1)[:, -10:]
+        return topk_iid_list.numpy().flatten().reshape(-1,10)
     
 
 

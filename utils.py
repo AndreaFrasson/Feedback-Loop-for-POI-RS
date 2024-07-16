@@ -167,16 +167,16 @@ def random_choice(items):
 # @input category_dict
 # @input visits
 # @output item (int): id of the selected item
-def choose_item(external_item_list, dataset, mode):
+def choose_item(new_items, dataset, mode):
 
-    user = np.unique(dataset.inter_feat[dataset.uid_field])
-    history = dataset.inter_feat[dataset.iid_field].tolist()
-    external_item_list = external_item_list.tolist()
+    user = list(dataset.user_counter.keys())
+    history = dataset.inter_feat[dataset.iid_field].numpy().reshape(len(user), -1)
+    new_items = new_items.tolist()
 
 
     if mode == 'random' or mode == 'r':
-        items=np.column_stack([external_item_list, history])
-        selected_tokens = np.apply_along_axis(random_choice, 1, items)
+        items=np.column_stack([new_items, history])
+        selected_items = np.apply_along_axis(random_choice, 1, items)
     
     elif mode == 'category' or mode == 'c':
         with open('id_category.pkl', 'rb') as file:
@@ -194,7 +194,7 @@ def choose_item(external_item_list, dataset, mode):
 
         selected_tokens = []
 
-        for items, prob in zip(external_item_list, probability):
+        for items, prob in zip(new_items, probability):
             category_recommended = _from_ids_to_category(items, id_cat_dict = loaded_dict)
             prob_distr = [prob[i] for i in category_recommended]
             prob_distr_norm = np.array(prob_distr) / sum(prob_distr)
@@ -205,7 +205,7 @@ def choose_item(external_item_list, dataset, mode):
         raise NotImplementedError
     
 
-    selected_ids = dataset.token2id(dataset.iid_field, _from_int_to_str(selected_tokens))
-    return selected_tokens, _from_ids_to_int(selected_ids)
+    print(selected_items)
+    return selected_items
 
 
