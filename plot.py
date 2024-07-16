@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'Random'
+MODEL = 'MultiVAE'
 STEP = 2
 MAXIT = 20
 

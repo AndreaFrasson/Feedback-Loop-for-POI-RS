@@ -150,17 +150,33 @@ def _get_category_distribution_by_user(interactions, id_cat_dict):
     return list(probability_dict.values())
 
 
+
+def random_choice(items):
+    new_items, old_items = items[:10], items[10:]
+    choice = np.random.binomial(1,[0.5, 0.5])
+    if choice:
+        return np.random.choice(new_items, 1)
+    
+    return np.random.choice(old_items, 1)
+
+
 # Function to choose one item from the recommandation list.
 # First, from the visits it extract the probability that a user visits a category based on the history.
 # Then, sample one item in the recommandation list, using the probability associated with the category.
 # @input rec_list
 # @input category_dict
 # @input visits
-# #output item (int): id of the selected item
+# @output item (int): id of the selected item
 def choose_item(external_item_list, dataset, mode):
 
+    user = np.unique(dataset.inter_feat[dataset.uid_field])
+    history = dataset.inter_feat[dataset.iid_field].tolist()
+    external_item_list = external_item_list.tolist()
+
+
     if mode == 'random' or mode == 'r':
-        selected_tokens = np.apply_along_axis(np.random.choice, 1, external_item_list)
+        items=np.column_stack([external_item_list, history])
+        selected_tokens = np.apply_along_axis(random_choice, 1, items)
     
     elif mode == 'category' or mode == 'c':
         with open('id_category.pkl', 'rb') as file:
