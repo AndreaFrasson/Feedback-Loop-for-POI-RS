@@ -26,6 +26,15 @@ def preprocess(seed = 1234):
     with open('name_category.pkl', 'wb') as f:
         pickle.dump(mapping_name, f)
 
+    # encoding ids
+    enc = LabelEncoder()
+    enc.fit(foursquare['venue_id'])
+    foursquare['venue_id'] = enc.transform(foursquare['venue_id'])
+
+    mapping_id = dict(zip(range(len(enc.classes_)), enc.classes_))
+    with open('id_loc.pkl', 'wb') as f:
+        pickle.dump(mapping_id, f)
+
     # equal length in all of the trajectory
     min_len = float('inf')
     set_uid = set(foursquare['uid'])
@@ -36,15 +45,6 @@ def preprocess(seed = 1234):
     red_df.reset_index(inplace=True, drop=True)
     #timestamp
     red_df['timestamp'] = np.arange(0, min_len).tolist() * len(set_uid)
-
-    # encoding ids
-    enc = LabelEncoder()
-    enc.fit(red_df['venue_id'])
-    red_df['venue_id'] = enc.transform(red_df['venue_id'])
-
-    mapping_id = dict(zip(range(len(enc.classes_)), enc.classes_))
-    with open('id_loc.pkl', 'wb') as f:
-        pickle.dump(mapping_id, f)
 
     ### split train/valid/test dataset
     users = list(set(red_df['uid']))
