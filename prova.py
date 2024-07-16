@@ -14,7 +14,7 @@ if __name__ =='__main__':
         'train_neg_sample_args': None,
         'field_separator': ',',
         'benchmark_filename': ['part1', 'part2', 'part3'],
-        'epochs': 50,
+        'epochs': 20,
         'eval_args': {
             'group_by': 'user',
             'order': 'TO', # temporal order

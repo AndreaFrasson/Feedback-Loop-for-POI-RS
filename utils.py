@@ -153,7 +153,7 @@ def _get_category_distribution_by_user(interactions, id_cat_dict):
 
 def random_choice(items):
     new_items, old_items = items[:10], items[10:]
-    choice = np.random.binomial(1,[0.5, 0.5])
+    choice = np.random.binomial(1, 0.5)
     if choice:
         return np.random.choice(new_items, 1)
     
