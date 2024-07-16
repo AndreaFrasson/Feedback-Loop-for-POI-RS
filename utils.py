@@ -205,7 +205,6 @@ def choose_item(new_items, dataset, mode):
         raise NotImplementedError
     
 
-    print(selected_items)
-    return selected_items
+    return selected_items.flatten()
 
 

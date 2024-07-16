@@ -159,10 +159,10 @@ class FeedBack_Loop():
         except:
             new_train = pd.concat([training_df, validation_df]).sort_values(by = [self.uid_field])
         # update the training set
-        #self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
+        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
         #save file
-        new_train.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
-        new_train.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part1.inter', index=False)
+        #new_train.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
+        #new_train.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part1.inter', index=False)
 
         # update the timestamp for the new validation set
         valid_user = self.validation_set._dataset.inter_feat['uid'].cpu().numpy()
@@ -180,17 +180,12 @@ class FeedBack_Loop():
                         columns=[self.uid_field, self.iid_field])
         
         # update the validation set
-        #self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
+        self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
         #save file
-        new_valid.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
-        new_valid.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part2.inter', index=False)
-
-        del self.training_set
-        del self.validation_set
+        #new_valid.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
+        #new_valid.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part2.inter', index=False)
         
         torch.cuda.empty_cache()
-
-        self.initialize()
 
 
 
@@ -240,12 +235,12 @@ class FeedBack_Loop():
 
 
 
-    def compute_metrics(self, users):
+    def compute_metrics(self):
 
-        recommended_items, external_ids = self.generate_prediction(self.training_set._dataset)
+        recommended_items = self.generate_prediction(self.training_set._dataset)
 
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten().numpy()))]
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten()))]
 
         # radius of gyration (individual)
         self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [metrics.compute_rog(self.training_set._dataset)['radius_of_gyration'].mean()]
