@@ -15,10 +15,9 @@ from recbole.trainer import HyperTuning
 
 class FeedBack_Loop():
 
-    def __init__(self, config_dict, steps):
+    def __init__(self, config_dict):
         self.config_dict = config_dict
         self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-        self.steps = steps 
 
 
     # first creation of the dataset and set the id variables. Split in training, validation and test 
@@ -37,7 +36,10 @@ class FeedBack_Loop():
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
     # Then, the dataset is prepared and splitted and the loop starts. 
-    def loop(self, MaxIt, choice = 'r', tuning = False, hyper_file = None):
+    def loop(self, epochs, dtrain, choice = 'r', tuning = False, hyper_file = None, user_frac = 1):
+
+        self.epochs = epochs
+        self.dtrain = dtrain
         self.metrics = {}
         if tuning:
             if not isinstance(hyper_file, str):
@@ -47,8 +49,14 @@ class FeedBack_Loop():
 
         self.initialize()
 
-        for c in tqdm(range(MaxIt)):
-            if c % self.steps == 0:
+        for c in tqdm(range(self.epochs)):
+            
+            #extract user that will see the recommendations
+            user_acc = np.random.choice(self.training_set._dataset.inter_feat[self.uid_field],
+                                        len(self.training_set._dataset.inter_feat[self.uid_field]) * user_frac)
+
+            # every delta_train epochs, retrain of the model
+            if c % self.dtrain == 0:
                 # get model
                 self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                 # trainer loading and initialization
@@ -60,13 +68,14 @@ class FeedBack_Loop():
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
-            predictions, external_ids = self.generate_prediction(self.training_set._dataset)
+                self.compute_metrics(user_acc)
 
+
+            predictions, external_ids = self.generate_prediction(self.training_set._dataset)
             # choose one item
             chosen_tokens, chosen_ids = utils.choose_item(external_ids, self.training_set._dataset, choice)
 
             self.update_incremental(chosen_ids)
-            self.compute_metrics(predictions)
             
 
 
@@ -222,7 +231,9 @@ class FeedBack_Loop():
 
 
 
-    def compute_metrics(self, recommended_items):
+    def compute_metrics(self, users):
+
+        recommended_items, external_ids = self.generate_prediction(self.training_set._dataset)
 
         # distinct items proposed (collective)
         self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten().numpy()))]
