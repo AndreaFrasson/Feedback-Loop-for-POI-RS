@@ -115,11 +115,19 @@ class FeedBack_Loop():
 
         users = len(self.training_set._dataset.user_counter.keys())
 
-        input_inter = Interaction({
-            'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
-            'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
-            'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp']))
-        })
+        try:
+            input_inter = Interaction({
+                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
+                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
+                'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp']))
+            })
+        
+        except:
+            input_inter = Interaction({
+                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
+                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
+            })
+
 
         input_inter.to(self.model.device)
 
