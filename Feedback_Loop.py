@@ -128,9 +128,13 @@ class FeedBack_Loop():
                 'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
             })
 
+        if torch.cuda.is_available():
+            print('cuda')
+            input_inter.to(torch.device('cuda'))
+
         with torch.no_grad():
             try:  # if model have full sort predict
-                input_inter.to(torch.device('cuda'))
+                print(self.model.device)
                 scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict
@@ -138,10 +142,7 @@ class FeedBack_Loop():
                 input_inter = input_inter.repeat(self.training_set._dataset.item_num)
                 input_inter.update(self.training_set._dataset.get_item_feature().repeat(len_input_inter))  # join item feature
 
-                input_inter.to(torch.device('cuda'))
-                self.model.to(torch.device('cuda'))
-
-                print(self.model.device)
+                
 
                 scores = self.model.predict(input_inter)
             
