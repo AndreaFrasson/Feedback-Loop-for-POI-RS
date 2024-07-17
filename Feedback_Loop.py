@@ -125,7 +125,6 @@ class FeedBack_Loop():
         except:
             input_inter = Interaction({
                 'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
-                'iid': self.training_set._dataset.inter_feat[self.iid_field].reshape(users,-1).to(torch.device(self.model.device)),
             })
 
         with torch.no_grad():
@@ -137,8 +136,28 @@ class FeedBack_Loop():
                 for i in input_inter.interaction.keys():
                     scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
-            except NotImplementedError:  # if model do not have full sort predict
-                input_inter.update(self.training_set._dataset.get_item_feature().to(torch.device(self.model.device)))
+            except NotImplementedError:  # if model do not have full sort predict --> context-aware
+                # get feature in the interactions
+
+                def feat_vector(array, dictionary):
+                    return [dictionary[x] for x in list(array)]
+                
+                items = self.training_set._dataset.item_feat['item_id'].numpy().reshape(866,-1)
+                cat_dict = self.training_set._dataset.item_feat['venue_category_name'].numpy()
+                lat_dict = self.training_set._dataset.item_feat['lat'].numpy()
+                lon_dict = self.training_set._dataset.item_feat['lon'].numpy()
+                
+
+                input_inter.update(Interaction({'item_id': torch.tensor(items).to(torch.device(self.model.device))}))
+
+                cat = np.apply_along_axis(feat_vector, 1, items, dictionary = cat_dict)
+                input_inter.update(Interaction({'venue_category_name': torch.tensor(cat).to(torch.device(self.model.device))}))
+
+                lat = np.apply_along_axis(feat_vector, 1, items, dictionary = lat_dict)
+                input_inter.update(Interaction({'lat': torch.tensor(lat).to(torch.device(self.model.device))}))
+
+                lon = np.apply_along_axis(feat_vector, 1, items, dictionary = lon_dict)
+                input_inter.update(Interaction({'lon': torch.tensor(lon).to(torch.device(self.model.device))}))
 
                 scores = self.model.predict(input_inter)
             
