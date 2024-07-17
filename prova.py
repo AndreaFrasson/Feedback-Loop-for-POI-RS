@@ -19,7 +19,7 @@ if __name__ =='__main__':
         'threshold': {'rating': 4},
         'normalize_all': True}
     # configurations initialization
-    config = Config(model='FNM', config_dict=config, dataset='ml-100k')
+    config = Config(model='NFM', config_dict=config, dataset='ml-100k')
 
     # init random seed
     init_seed(config['seed'], config['reproducibility'])
