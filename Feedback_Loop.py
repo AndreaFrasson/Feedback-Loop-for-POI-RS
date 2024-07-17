@@ -50,8 +50,6 @@ class FeedBack_Loop():
 
         self.initialize()
 
-        print(self.config['device'])
-
         for c in tqdm(range(self.epochs)):
             
             #extract user that will see the recommendations
@@ -131,9 +129,8 @@ class FeedBack_Loop():
             })
 
 
-        
+        print(self.model.device)
         input_inter.to(self.model.device)
-        print(input_inter.device)
 
         with torch.no_grad():
             try:  # if model have full sort predict
