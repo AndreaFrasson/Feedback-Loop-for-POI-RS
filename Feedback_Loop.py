@@ -124,7 +124,7 @@ class FeedBack_Loop():
         
         except:
             input_inter = Interaction({
-                'uid': torch.tensor(list(self.training_set._dataset.inter_feat['uid'])).to(torch.device(self.model.device)),
+                'uid': torch.tensor(np.array(self.training_set._dataset.user_counter.keys()).reshape(866,-1)).to(torch.device(self.model.device)),
             })
 
         with torch.no_grad():
