@@ -63,7 +63,7 @@ class FeedBack_Loop():
             # every delta_train epochs, retrain of the model
             if c % self.dtrain == 0:
                 # get model
-                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
+                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device_id'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
                 # model training
@@ -128,17 +128,21 @@ class FeedBack_Loop():
                 'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
             })
 
-
-        print(self.model.device)
-        input_inter.to(self.model.device)
-
         with torch.no_grad():
             try:  # if model have full sort predict
+                input_inter.to(torch.device('cuda'))
                 scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
+
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(input_inter)
                 input_inter = input_inter.repeat(self.training_set._dataset.item_num)
                 input_inter.update(self.training_set._dataset.get_item_feature().repeat(len_input_inter))  # join item feature
+
+                input_inter.to(torch.device('cuda'))
+                self.model.to(torch.device('cuda'))
+
+                print(self.model.device)
+
                 scores = self.model.predict(input_inter)
             
             scores = scores.view(-1, self.dataset.item_num)

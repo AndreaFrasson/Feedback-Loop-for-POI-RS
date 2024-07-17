@@ -8,7 +8,7 @@ MODEL = 'NFM'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 20
+EPOCHS = 1
 DEVICE_ID = '0'
 
 # Default parameters
