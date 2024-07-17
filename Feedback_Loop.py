@@ -131,11 +131,17 @@ class FeedBack_Loop():
         if torch.cuda.is_available():
             print('cuda')
             input_inter.to(torch.device('cuda'))
+            for i in input_inter.interaction.keys():
+                print(input_inter.interaction[i].device)
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                print(self.model.device)
-                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
+                print('model device', self.model.device)
+                input_inter.to(torch.device('cuda'))
+
+                print('inter device')
+                for i in input_inter.interaction.keys():
+                    scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict
                 len_input_inter = len(input_inter)
