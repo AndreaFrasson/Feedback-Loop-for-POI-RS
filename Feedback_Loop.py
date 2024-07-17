@@ -138,7 +138,7 @@ class FeedBack_Loop():
                     scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict
-                input_inter.update(self.training_set._dataset.get_item_feature())
+                input_inter.update(self.training_set._dataset.get_item_feature().to(torch.device(self.model.device)))
 
                 scores = self.model.predict(input_inter)
             
