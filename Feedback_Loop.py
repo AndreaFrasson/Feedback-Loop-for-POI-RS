@@ -117,22 +117,16 @@ class FeedBack_Loop():
 
         try:
             input_inter = Interaction({
-                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
-                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
-                'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp']))
+                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
+                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1).to(torch.device(self.model.device)),
+                'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp'])).to(torch.device(self.model.device))
             })
         
         except:
             input_inter = Interaction({
-                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())),
-                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1),
+                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
+                'iid': self.training_set._dataset.inter_feat[self.uid_field].reshape(users,-1).to(torch.device(self.model.device)),
             })
-
-        if torch.cuda.is_available():
-            print('cuda')
-            input_inter.to(torch.device('cuda'))
-            for i in input_inter.interaction.keys():
-                print(input_inter.interaction[i].device)
 
         with torch.no_grad():
             try:  # if model have full sort predict
