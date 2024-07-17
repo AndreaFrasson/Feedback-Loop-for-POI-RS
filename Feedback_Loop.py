@@ -54,8 +54,8 @@ class FeedBack_Loop():
             
             #extract user that will see the recommendations
             if user_frac < 1:
-                user_acc = np.random.choice(self.training_set._dataset.inter_feat[self.uid_field],
-                                            int(len(self.training_set._dataset.inter_feat[self.uid_field]) * user_frac)) 
+                user_acc = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
+                                            int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
                 user_acc -=1
             else:
                 user_acc = None
@@ -104,8 +104,7 @@ class FeedBack_Loop():
         scores = self.__prediction()
 
         if user_acc is not None:
-            for u in user_acc:
-                scores[u] = -1
+            scores[user_acc] = -1
 
         return scores
     
@@ -270,8 +269,3 @@ class FeedBack_Loop():
 
         # individual gini index
         self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [np.mean(metrics.individual_gini(self.training_set._dataset, self.uid_field, self.iid_field))]
-
-        
-
-
-

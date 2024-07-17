@@ -153,6 +153,10 @@ def _get_category_distribution_by_user(interactions, id_cat_dict):
 
 def random_choice(items):
     new_items, old_items = items[:10], items[10:]
+
+    if sum(new_items) < 0:
+        return -1
+    
     choice = np.random.binomial(1, 0.5)
     if choice:
         return np.random.choice(new_items, 1)
@@ -204,7 +208,7 @@ def choose_item(new_items, dataset, mode):
     else:
         raise NotImplementedError
     
-
+    print(selected_items)
     return selected_items.flatten()
 
 
