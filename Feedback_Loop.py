@@ -130,6 +130,7 @@ class FeedBack_Loop():
 
 
         input_inter.to(self.model.device)
+        print(input_inter.device)
 
         with torch.no_grad():
             try:  # if model have full sort predict
