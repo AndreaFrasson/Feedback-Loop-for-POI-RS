@@ -142,7 +142,7 @@ class FeedBack_Loop():
                 def feat_vector(array, dictionary):
                     return [dictionary[x] for x in list(array)]
                 
-                items = self.training_set._dataset.item_feat['item_id'].numpy().reshape(866,-1)
+                items = self.training_set._dataset.inter_feat['item_id'].numpy().reshape(866,-1)
                 cat_dict = self.training_set._dataset.item_feat['venue_category_name'].numpy()
                 lat_dict = self.training_set._dataset.item_feat['lat'].numpy()
                 lon_dict = self.training_set._dataset.item_feat['lon'].numpy()
