@@ -54,7 +54,6 @@ class FeedBack_Loop():
             
             #extract user that will not see the recommendations
             if user_frac < 1:
-                print('a')
                 user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
                                             int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
                 rows_not_active = user_not_active - 1 
