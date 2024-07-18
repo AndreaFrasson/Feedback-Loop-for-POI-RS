@@ -36,7 +36,7 @@ class FeedBack_Loop():
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
     # Then, the dataset is prepared and splitted and the loop starts. 
-    def loop(self, epochs, dtrain, choice = 'r', tuning = False, hyper_file = None, user_frac = 1):
+    def loop(self, epochs, dtrain, choice = 'r', tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
         self.dtrain = dtrain
@@ -52,18 +52,18 @@ class FeedBack_Loop():
 
         for c in tqdm(range(self.epochs)):
             
-            #extract user that will see the recommendations
+            #extract user that will not see the recommendations
             if user_frac < 1:
-                user_acc = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
+                user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
                                             int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
-                user_acc -=1
+                rows_not_active = user_not_active - 1 
             else:
-                user_acc = None
+                rows_not_active = None
 
             # every delta_train epochs, retrain of the model
             if c % self.dtrain == 0:
                 # get model
-                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device_id'])
+                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                 # trainer loading and initialization
                 self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
                 # model training
@@ -74,14 +74,16 @@ class FeedBack_Loop():
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
 
-            predictions = self.generate_prediction(self.training_set._dataset, user_acc)
+            predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
             # choose one item
-            chosen_items = utils.choose_item(predictions, self.training_set._dataset, choice)
+            users_history = [g[1].to_numpy() for g in pd.DataFrame(self.training_set.dataset.inter_feat.numpy()).groupby('uid')['item_id']]
+            chosen_items = self.choose_items(predictions, users_history, rows_not_active)
 
-            if c % self.dtrain == 0:
-                self.compute_metrics()
+            #if c % self.dtrain == 0:
+            #    self.compute_metrics()
 
-            self.update_incremental(chosen_items)
+
+            #self.update_incremental(chosen_items)
             
 
 
@@ -98,13 +100,13 @@ class FeedBack_Loop():
     
 
 
-    def generate_prediction(self, dataset, user_acc = None):
+    def generate_prediction(self, dataset, row_not_active = None):
 
         torch.cuda.empty_cache()
         scores = self.__prediction()
 
-        if user_acc is not None:
-            scores[user_acc] = -1
+        if row_not_active is not None:
+            scores[row_not_active] = -1
 
         return scores
     
@@ -126,7 +128,6 @@ class FeedBack_Loop():
         with torch.no_grad():
             try:  # if model have full sort predict
                 input_inter.to(self.model.device)
-                
                 scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
@@ -162,6 +163,25 @@ class FeedBack_Loop():
 
         return topk_iid_list.numpy().flatten().reshape(-1,10)
     
+    
+
+    def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active):
+        k = 0.3 # percentuale utenti che non seguono il recommender
+
+        users = set(self.training_set._dataset.user_counter.keys())
+
+        if rows_not_active is not None:
+            active_users = users - set(rows_not_active)
+
+        not_active_users = np.random.choice(list(active_users), int(len(active_users) * k))
+        not_active_rows = not_active_users - 1
+
+        choices = np.apply_along_axis(np.random.choice, 1, recommender_pred, size = 1).flatten()
+        random_item_history = [int(np.random.choice(x, 1,)) for x in not_recommender_pred]
+
+        np.array(choices)[not_active_rows] = np.array(random_item_history)[not_active_rows]
+
+        return choices
 
 
 
