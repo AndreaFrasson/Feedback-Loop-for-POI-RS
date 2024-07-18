@@ -115,26 +115,19 @@ class FeedBack_Loop():
 
         users = len(self.training_set._dataset.user_counter.keys())
 
-        try:
-            input_inter = Interaction({
-                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
-                'iid': self.training_set._dataset.inter_feat[self.iid_field].to(torch.device(self.model.device)),
-                'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp'])).to(torch.device(self.model.device))
-            })
-        
-        except:
-            input_inter = Interaction({
-                'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
-            })
+
+        # get the score of every item
+        input_inter = Interaction({
+            'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys()))
+        })
+        input_inter = self.dataset.join(input_inter)  # join user feature
+    
 
         with torch.no_grad():
             try:  # if model have full sort predict
-                print('model device', self.model.device)
-                input_inter.to(torch.device('cuda'))
-
-                print('inter device')
-                for i in input_inter.interaction.keys():
-                    scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
+                input_inter.to(self.model.device)
+                
+                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
                 # get feature in the interactions
