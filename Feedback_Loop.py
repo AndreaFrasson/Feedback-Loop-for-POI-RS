@@ -173,7 +173,7 @@ class FeedBack_Loop():
         if rows_not_active is not None:
             active_users = users - set(rows_not_active)
         else:
-            active_users = None
+            active_users = users
 
         not_active_users = np.random.choice(list(active_users), int(len(active_users) * k))
         not_active_rows = not_active_users - 1
