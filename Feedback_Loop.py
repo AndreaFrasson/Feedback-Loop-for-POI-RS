@@ -60,6 +60,8 @@ class FeedBack_Loop():
             else:
                 rows_not_active = None
 
+            print(rows_not_active)
+
             # every delta_train epochs, retrain of the model
             if c % self.dtrain == 0:
                 # get model
@@ -167,7 +169,6 @@ class FeedBack_Loop():
 
     def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active):
         k = 0.3 # percentuale utenti che non seguono il recommender
-        print(rows_not_active)
 
         users = set(self.training_set._dataset.user_counter.keys())
 
