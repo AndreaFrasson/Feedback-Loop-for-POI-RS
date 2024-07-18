@@ -118,7 +118,7 @@ class FeedBack_Loop():
         try:
             input_inter = Interaction({
                 'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys())).to(torch.device(self.model.device)),
-                'iid': self.training_set._dataset.inter_feat[self.iid_field].reshape(users,-1).to(torch.device(self.model.device)),
+                'iid': self.training_set._dataset.inter_feat[self.iid_field].to(torch.device(self.model.device)),
                 'timestamp': torch.tensor(np.unique(self.training_set._dataset.inter_feat['timestamp'])).to(torch.device(self.model.device))
             })
         
