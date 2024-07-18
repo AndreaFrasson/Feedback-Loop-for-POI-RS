@@ -167,6 +167,7 @@ class FeedBack_Loop():
 
     def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active):
         k = 0.3 # percentuale utenti che non seguono il recommender
+        print(rows_not_active)
 
         users = set(self.training_set._dataset.user_counter.keys())
 
