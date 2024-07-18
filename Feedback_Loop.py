@@ -62,7 +62,6 @@ class FeedBack_Loop():
             else:
                 rows_not_active = None
 
-            print(rows_not_active)
 
             # every delta_train epochs, retrain of the model
             if c % self.dtrain == 0:
