@@ -81,13 +81,12 @@ class FeedBack_Loop():
             users_history = [g[1].to_numpy() for g in pd.DataFrame(self.training_set.dataset.inter_feat.numpy()).groupby('uid')['item_id']]
             chosen_items = self.choose_items(predictions, users_history, rows_not_active)
 
+            self.update_incremental(chosen_items)
+
             #if c % self.dtrain == 0:
             #    self.compute_metrics()
 
-
-            #self.update_incremental(chosen_items)
             
-
 
     # perform a fit step
     def fit(self):
@@ -191,43 +190,49 @@ class FeedBack_Loop():
 
     # Update the interaction files (for training) in an incremental fashion.
     def update_incremental(self, new_items):
+        new_valid_dict = {}
+        new_training_dict = {}
 
-        # translate current training set and validation set in dataframe
+        for u,g in pd.DataFrame(self.validation_set._dataset.inter_feat.numpy()).groupby('uid'):
+
+            try:
+                timestamp = int(g[self.time_field].values)
+            except:
+                timestamp = None
+
+            if new_items[u-1] > 0: # if the user is an active user, change both training and validation
+                
+                # new training row
+                new_training_dict[self.uid_field] = new_training_dict.get(self.uid_field, []) + [u] #user id
+                new_training_dict[self.iid_field] = new_training_dict.get(self.iid_field, []) + [int(g[self.iid_field].values)] #item id
+
+                if timestamp is not None:
+                    new_training_dict[self.time_field] = new_training_dict.get(self.time_field, []) + [timestamp] #timestamp
+                    
+                # new validation row
+                new_valid_dict[self.uid_field] = new_valid_dict.get(self.uid_field, []) + [u] #user id
+                new_valid_dict[self.iid_field] = new_valid_dict.get(self.iid_field, []) + [int(new_items[u-1])] #item id
+
+                if timestamp is not None:
+                    new_valid_dict[self.time_field] = new_valid_dict.get(self.time_field, []) + [timestamp+1] #timestamp
+
+
+            else: # user is not active, copy the same interaction again in the new valid
+                # new validation row
+                new_valid_dict[self.uid_field] = new_valid_dict.get(self.uid_field, []) + [u] #user id
+                new_valid_dict[self.iid_field] = new_valid_dict.get(self.iid_field, []) + [int(g[self.iid_field].values)] #item id
+
+                if timestamp is not None:
+                    new_valid_dict[self.time_field] = new_valid_dict.get(self.time_field, []) + [timestamp+1] #timestamp
+                    
+
+        self.validation_set._dataset.inter_feat = Interaction(new_valid_dict) # set new valid
+
+        # translate current training set and old validation set in dataframe
         training_df = pd.DataFrame(self.training_set._dataset.inter_feat.numpy())
-        validation_df = pd.DataFrame(self.validation_set._dataset.inter_feat.numpy())
+        new_train = pd.concat([training_df, pd.DataFrame(new_training_dict)], axis=0).reset_index(drop=True)
+        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))    
 
-        # append the old validation set to the old training set, the timestamp increases by one
-        try:
-            new_train = pd.concat([training_df, validation_df]).sort_values(by = [self.uid_field, self.time_field])
-        except:
-            new_train = pd.concat([training_df, validation_df]).sort_values(by = [self.uid_field])
-        # update the training set
-        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))
-        #save file
-        #new_train.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
-        #new_train.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part1.inter', index=False)
-
-        # update the timestamp for the new validation set
-        valid_user = self.validation_set._dataset.inter_feat['uid'].cpu().numpy()
-
-        try:
-            new_timestamp = self.validation_set._dataset.inter_feat['timestamp'].cpu().numpy() + 1
-            
-            # the new validation set is build from the recommendetion made in the last step
-            new_valid = pd.DataFrame(list(zip(valid_user, new_items, new_timestamp)), 
-                        columns=[self.uid_field, self.iid_field, self.time_field])
-        
-        except:
-            # the new validation set is build from the recommendetion made in the last step
-            new_valid = pd.DataFrame(list(zip(valid_user, new_items)), 
-                        columns=[self.uid_field, self.iid_field])
-        
-        # update the validation set
-        self.validation_set._dataset.inter_feat = Interaction(new_valid.copy(deep=True))
-        #save file
-        #new_valid.columns = [self.uid_field+':token', self.iid_field+':token', self.time_field+':token']
-        #new_valid.to_csv(self.config_dict['data_path']+'/'+self.config_dict['dataset']+'/'+self.config_dict['dataset']+'.part2.inter', index=False)
-        
         torch.cuda.empty_cache()
 
 
