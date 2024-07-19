@@ -316,8 +316,8 @@ class FeedBack_Loop():
         self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [(np.mean(entropy['entropy']), np.std(entropy))]
 
         # mean entropy (collective)
-        entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.iid_field, self.uid_field)
-        self.metrics['S_col'] = self.metrics.get('S_col', []) + [(np.mean(entropy['entropy']), np.std(entropy))]
+        entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.iid_field, self.uid_field)['entropy']
+        self.metrics['S_col'] = self.metrics.get('S_col', []) + [(np.mean(entropy), np.std(entropy))]
 
         # explore and return events (individual)
         explore, returns = metrics.get_explore_returns(self.training_set._dataset, self.uid_field, self.iid_field)
