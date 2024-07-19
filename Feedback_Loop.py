@@ -39,7 +39,7 @@ class FeedBack_Loop():
     def loop(self, epochs, len_step, choice = 'r', tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
-        self.dtrain = len_step
+        self.len_step = len_step
         self.metrics = {}
 
         if tuning:
@@ -68,7 +68,7 @@ class FeedBack_Loop():
             for sim_step in range(self.len_step):
                 #extract user that will not see the recommendations
                 if user_frac < 1:
-                    user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.sim_step
+                    user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.len_step
                     np.seed()
                     user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
                                                 int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
