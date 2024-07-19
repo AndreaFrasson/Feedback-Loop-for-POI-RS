@@ -36,10 +36,10 @@ class FeedBack_Loop():
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
     # Then, the dataset is prepared and splitted and the loop starts. 
-    def loop(self, epochs, dtrain, choice = 'r', tuning = False, hyper_file = None, user_frac = 0.2):
+    def loop(self, epochs, len_step, choice = 'r', tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
-        self.dtrain = dtrain
+        self.dtrain = len_step
         self.metrics = {}
 
         if tuning:
@@ -51,45 +51,46 @@ class FeedBack_Loop():
         self.initialize()
 
         for c in tqdm(range(self.epochs)):
+
+            # every epochs, retrain of the model
+            # get model
+            self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
+            # trainer loading and initialization
+            self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
+            # model training
+            best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+            results = self.trainer.evaluate(self.test_set)
+            self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+            self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+            self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
             
-            #extract user that will not see the recommendations
-            if user_frac < 1:
-                user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
-                                            int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
-                rows_not_active = user_not_active - 1 
-
-            else:
-                rows_not_active = None
-
-
-            # every delta_train epochs, retrain of the model
-            if c % self.dtrain == 0:
-                # get model
-                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
-                # trainer loading and initialization
-                self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
-                # model training
-                best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-                results = self.trainer.evaluate(self.test_set)
-                self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
-
-
-            #recommender choices
-            rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
-
-            if c % dtrain == 0:
-                self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
-
-            # not recommender choices
-            not_rec_predictions = self.generate_not_rec_predictions('cr')
             
-            # choose one item
-            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
+            for sim_step in range(self.len_step):
+                #extract user that will not see the recommendations
+                if user_frac < 1:
+                    user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.sim_step
+                    np.seed()
+                    user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
+                                                int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
+                    rows_not_active = user_not_active - 1 
 
-            self.update_incremental(chosen_items)
+                else:
+                    rows_not_active = None
+
+                #recommender choices
+                rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+
+                # not recommender choices
+                not_rec_predictions = self.generate_not_rec_predictions('cr')
                 
+                # choose one item
+                chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
+
+                self.update_incremental(chosen_items)
+                
+            
+            self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
+
 
             
 
@@ -172,7 +173,7 @@ class FeedBack_Loop():
     
 
     def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active):
-        k = 0.3 # percentuale utenti che non seguono il recommender
+        k = 0.5 # percentuale utenti che non seguono il recommender
 
         users = set(self.training_set._dataset.user_counter.keys())
 
