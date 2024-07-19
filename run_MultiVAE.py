@@ -2,6 +2,7 @@ from preprocess import preprocess
 import os
 import sys
 from Feedback_Loop import FeedBack_Loop
+import json
 
 # SETTINGS GENERAL RECOMMENDER
 MODEL = 'MultiVAE'
@@ -48,4 +49,4 @@ if __name__ == '__main__':
 
         # save output
     with open('output/'+fl.config['model']+'_'+str(m)+'-'+str(MaxIt)+'.txt','w') as data:  
-      data.write(str(fl.metrics))
+      json.dump(fl.metrics, data)

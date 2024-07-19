@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'Pop'
+MODEL = 'MultiVAE'
 STEP = 5
 MAXIT = 20
 
