@@ -123,22 +123,17 @@ class FeedBack_Loop():
         users = len(self.training_set._dataset.user_counter.keys())
 
 
-        # get the score of every item
-        input_inter = Interaction({
-            'uid': torch.tensor(list(self.training_set._dataset.inter_feat[self.uid_field])),
-            'item_id': torch.tensor(list(self.training_set._dataset.inter_feat[self.iid_field]))
-        })
-        input_inter = self.dataset.join(input_inter)  # join user feature
+        
     
         with torch.no_grad():
             try:  # if model have full sort predict
-                input_inter.to(self.model.device)
-                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
+                #input_inter.to(self.model.device)
+                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
                 # get feature in the interactions
-
-                scores = self.model.predict(input_inter)
+                print()
+                #scores = self.model.predict(input_inter)
             
             scores = scores.view(-1, self.dataset.item_num)
         
