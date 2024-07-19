@@ -27,11 +27,11 @@ def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 
     return 
 
-def make_scatter(mean, var, y, title, ylab = '', vl = 0, x2 = None):
+def make_scatter(x, mean, var, title, ylab = '', vl = 0, x2 = None):
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
-    ax.errorbar(mean, y, var, linestyle='None', marker='o')
+    ax.errorbar(x, mean, var, linestyle='None', marker='o')
     ax.set_xticks(range(len(x)))
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(3))
@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 # Diversity of Items
                 title = 'Diversity of Items'
                 ylab = 'Nr. of Distinct Proposed Location'
-                x = [i[0] for i in range(len(js[k]))]
+                x = [i for i in range(len(js[k]))]
                 y = js[k]
                 vl = STEP
 
@@ -72,103 +72,111 @@ if __name__ == '__main__':
             case 'rog_ind':
                 # Diversity of Items
                 title = 'Total Radius Of Gyration'
-                means = [i[0] for i in range(len(js[k]))]
-                var = [i[1] for i in range(len(js[k]))]
-                y = js[k]
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
+                x = [i for i in range(len(js[k]))]
                 vl = STEP
                 ylab = 'ROG[km]'
 
-                make_plot(means, var, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'rog_ind_2':
                 # Diversity of Items
                 title = 'Total Radius Of Gyration'
-                means = [i[0] for i in range(len(js[k]))]
-                var = [i[1] for i in range(len(js[k]))]
-                y = js[k]
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
+                x = [i for i in range(len(js[k]))]
                 vl = STEP
                 ylab = '2-ROG[km]'
 
-                make_plot(means, var, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'D_ind':
                 # Diversity of Items
                 title = 'Distinct Location Visited'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = 'Nr. of Distinct Location Visited by each user'
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'L_old_ind':
                 # Diversity of Items
                 title = 'Old Location Suggested'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = 'Nr. of Distinct Old Location '
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'L_new_ind':
                 # Diversity of Items
                 title = 'New Location Suggested'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = 'Nr. of Distinct new Location '
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'S_ind':
                 # Diversity of Items
                 title = 'Individual Entropy'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = ''
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'S_col':
                 # Diversity of Items
                 title = 'Collective Entropy'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = ''
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'Expl_ind':
                 # Diversity of Items
                 title = 'Exploring Events'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = ' '
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'Ret_ind':
                 # Diversity of Items
                 title = 'Returning Events'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'Gini_ind':
                 # Diversity of Items
                 title = 'Individual Gini'
+                means = [i[0] for i in js[k]]
+                var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
-                y = js[k]
                 vl = STEP
                 ylab = ''
 
-                make_plot(x, y, title, ylab, vl)
+                make_scatter(x, means, var, title, ylab, vl)
 
             case 'test_hit':
                # hit rate
