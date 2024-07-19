@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
             case 'rog_ind_2':
                 # Diversity of Items
-                title = 'Total Radius Of Gyration'
+                title = 'Total 2k Radius Of Gyration'
                 means = [i[0] for i in js[k]]
                 var = [i[1] for i in js[k]]
                 x = [i for i in range(len(js[k]))]
