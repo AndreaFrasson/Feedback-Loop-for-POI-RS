@@ -79,6 +79,9 @@ class FeedBack_Loop():
             #recommender choices
             rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
 
+            if c % dtrain == 0:
+                self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
+
             # not recommender choices
             not_rec_predictions = self.generate_not_rec_predictions('cr')
             
@@ -86,9 +89,7 @@ class FeedBack_Loop():
             chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
 
             self.update_incremental(chosen_items)
-
-            #if c % self.dtrain == 0:
-            #    self.compute_metrics()
+                
 
             
 
@@ -287,12 +288,10 @@ class FeedBack_Loop():
 
 
 
-    def compute_metrics(self):
-
-        recommended_items = self.generate_prediction(self.training_set._dataset)
+    def compute_metrics(self, recommended_items):
 
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten()))]
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # -1 is padding value, not considered
 
         # radius of gyration (individual)
         self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [metrics.compute_rog(self.training_set._dataset)['radius_of_gyration'].mean()]

@@ -93,32 +93,26 @@ def compute_rog(interactions, k = None):
 
 
 # count, for each user, how many items in the recommendetion list proposed
-# were already saw. Return the sum
+# were already saw. Return the mean and the average
 def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
-    users = set(dataset.inter_feat[uid_field].numpy())
-    history = dataset.inter_feat[iid_field].numpy().reshape(len(users), -1)
 
-    old_items = 0
-    for rec, hist in list(zip(recommended_items, history)):
-        listC =[list(set(hist)).count(x) for x in rec]
-        old_items += sum(listC)
+    old_items = []
+    for u,g in pd.DataFrame(dataset.inter_feat.numpy()).groupby(uid_field):
+        old_items.append(sum(el in recommended_items[u-1] for el in set(g[iid_field].values)))
 
-    return old_items
+    return np.mean(old_items), np.var(old_items)
 
 
 
 # count, for each user, how many items in the recommendetion list proposed
 # are new Return the sum
 def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
-    users = set(dataset.inter_feat[uid_field].numpy())
-    history = dataset.inter_feat[iid_field].numpy().reshape(len(users), -1)
+    new_items = []
+    for u,g in pd.DataFrame(dataset.inter_feat.numpy()).groupby(uid_field):
+        old_items = sum(el in recommended_items[u-1] for el in set(g[iid_field].values))
+        new_items.append(len(recommended_items[u-1]) - old_items)
 
-    new_items = 0
-    for rec, hist in list(zip(recommended_items, history)):
-        listC =[list(set(hist)).count(x) for x in rec]
-        new_items += len(rec) - sum(listC)
-
-    return new_items
+    return np.mean(new_items), np.var(new_items)
 
 
 
