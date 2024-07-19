@@ -50,46 +50,49 @@ class FeedBack_Loop():
 
         self.initialize()
 
-        for c in tqdm(range(self.epochs)):
+        iterations = self.epochs * self.len_step
 
-            # every epochs, retrain of the model
-            # get model
-            self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
-            # trainer loading and initialization
-            self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
-            # model training
-            best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-            results = self.trainer.evaluate(self.test_set)
-            self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-            self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-            self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+        for c in tqdm(range(iterations)):
+
+            # every len_step epochs, retrain of the model
+            if c % self.len_step == 0:
+                # get model
+                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
+                # trainer loading and initialization
+                self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
+                # model training
+                best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+                results = self.trainer.evaluate(self.test_set)
+                self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
             
             
-            for sim_step in range(self.len_step):
-                #extract user that will not see the recommendations
-                if user_frac < 1:
-                    user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.len_step
-                    np.seed()
-                    user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
-                                                int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
-                    rows_not_active = user_not_active - 1 
+            
+            #extract user that will not see the recommendations
+            if user_frac < 1:
+                user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.len_step
+                np.random.seed()
+                user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
+                                            int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
+                rows_not_active = user_not_active - 1 
 
-                else:
-                    rows_not_active = None
+            else:
+                rows_not_active = None
 
-                #recommender choices
-                rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+            #recommender choices
+            rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
 
-                # not recommender choices
-                not_rec_predictions = self.generate_not_rec_predictions('cr')
+            # not recommender choices
+            not_rec_predictions = self.generate_not_rec_predictions('cr')
+            
+            # choose one item
+            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
+
+            self.update_incremental(chosen_items)
                 
-                # choose one item
-                chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
-
-                self.update_incremental(chosen_items)
-                
-            
-            self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
+            if c % self.len_step == 0:
+                self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
 
 
             
