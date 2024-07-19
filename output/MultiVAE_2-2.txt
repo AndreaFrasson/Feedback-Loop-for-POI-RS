@@ -1,1 +1,0 @@
-{'test_hit': [0.765], 'test_precision': [0.1618], 'test_rec': [0.0213]}

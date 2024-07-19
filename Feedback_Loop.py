@@ -295,14 +295,14 @@ class FeedBack_Loop():
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']
-        self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [(np.mean(rog), np.var(rog))]
+        self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [(np.mean(rog), np.std(rog))]
         # radius of gyration k = 2 (individual)
         k_rog = metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration']
-        self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [(np.mean(k_rog), np.var(k_rog))]
+        self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [(np.mean(k_rog), np.std(k_rog))]
        
         # distinct items for each user (individual)
         di = metrics.distinct_items(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [(np.mean(di), np.var(di))]
+        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [(np.mean(di), np.std(di))]
 
         # old items suggested (individual)
         self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_items_suggested(
@@ -313,20 +313,20 @@ class FeedBack_Loop():
                                                                            recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
         # mean entropy (individual)
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
-        self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [(np.mean(entropy['entropy']), np.var(entropy))]
+        self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [(np.mean(entropy['entropy']), np.std(entropy))]
 
         # mean entropy (collective)
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.iid_field, self.uid_field)
-        self.metrics['S_col'] = self.metrics.get('S_col', []) + [(np.mean(entropy['entropy']), np.var(entropy))]
+        self.metrics['S_col'] = self.metrics.get('S_col', []) + [(np.mean(entropy['entropy']), np.std(entropy))]
 
         # explore and return events (individual)
         explore, returns = metrics.get_explore_returns(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [(np.mean(explore), np.var(explore))]
+        self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [(np.mean(explore), np.std(explore))]
         self.metrics['Ret_ind'] = self.metrics.get('Ret_ind', []) + [(np.mean(returns), np.mean(returns))]
 
         # individual gini index
         gini_ind = metrics.individual_gini(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [(np.mean(gini_ind), np.var(gini_ind))]
+        self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [(np.mean(gini_ind), np.std(gini_ind))]
 
 
 

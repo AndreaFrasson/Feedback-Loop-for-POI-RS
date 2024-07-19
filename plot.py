@@ -4,10 +4,10 @@ import json
 
 
 MODEL = 'MultiVAE'
-STEP = 2
+STEP = 5
 MAXIT = 20
 
-def make_plot(x, y, title, ylab = '', vl = 0):
+def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
@@ -16,12 +16,7 @@ def make_plot(x, y, title, ylab = '', vl = 0):
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(3))
 
-    if vl > 0:
-        ax.set_xlabel('Epochs', size = 20)
-        ax.vlines(np.arange(len(x), step=vl), ymin=min(y), ymax= max(y), colors='red',linestyles='dotted')
-    
-    else:
-        ax.set_xlabel('Training Step', size = 20)
+    ax.set_xlabel('Epochs', size = 20)
 
     ax.set_ylabel(ylab, size = 20)
     ax.tick_params(axis='both', which='major', labelsize=20)
@@ -32,6 +27,25 @@ def make_plot(x, y, title, ylab = '', vl = 0):
 
     return 
 
+def make_scatter(mean, var, y, title, ylab = '', vl = 0, x2 = None):
+
+    fig, ax = plt.subplots(figsize=(8, 8))
+
+    ax.errorbar(mean, y, var, linestyle='None', marker='o')
+    ax.set_xticks(range(len(x)))
+
+    ax.xaxis.set_major_locator(plt.MaxNLocator(3))
+
+    ax.set_xlabel('Epochs', size = 20)
+
+    ax.set_ylabel(ylab, size = 20)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    #ax.set_xscale('log')
+    #ax.set_yscale('log')
+    fig.tight_layout()
+    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.png')
+
+    return 
 
 if __name__ == '__main__':
 
@@ -49,7 +63,7 @@ if __name__ == '__main__':
                 # Diversity of Items
                 title = 'Diversity of Items'
                 ylab = 'Nr. of Distinct Proposed Location'
-                x = [i for i in range(len(js[k]))]
+                x = [i[0] for i in range(len(js[k]))]
                 y = js[k]
                 vl = STEP
 
@@ -58,22 +72,24 @@ if __name__ == '__main__':
             case 'rog_ind':
                 # Diversity of Items
                 title = 'Total Radius Of Gyration'
-                x = [i for i in range(len(js[k]))]
+                means = [i[0] for i in range(len(js[k]))]
+                var = [i[1] for i in range(len(js[k]))]
                 y = js[k]
                 vl = STEP
                 ylab = 'ROG[km]'
 
-                make_plot(x, y, title, ylab, vl)
+                make_plot(means, var, y, title, ylab, vl)
 
             case 'rog_ind_2':
                 # Diversity of Items
-                title = '2k Radius Of Gyration'
-                x = [i for i in range(len(js[k]))]
+                title = 'Total Radius Of Gyration'
+                means = [i[0] for i in range(len(js[k]))]
+                var = [i[1] for i in range(len(js[k]))]
                 y = js[k]
                 vl = STEP
                 ylab = '2-ROG[km]'
 
-                make_plot(x, y, title, ylab, vl)
+                make_plot(means, var, y, title, ylab, vl)
 
             case 'D_ind':
                 # Diversity of Items
