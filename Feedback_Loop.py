@@ -76,10 +76,14 @@ class FeedBack_Loop():
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
 
-            predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+            #recommender choices
+            rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+
+            # not recommender choices
+            not_rec_predictions = self.generate_not_rec_predictions('cr')
+            
             # choose one item
-            users_history = [g[1].to_numpy() for g in pd.DataFrame(self.training_set.dataset.inter_feat.numpy()).groupby('uid')['item_id']]
-            chosen_items = self.choose_items(predictions, users_history, rows_not_active)
+            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
 
             self.update_incremental(chosen_items)
 
@@ -121,11 +125,11 @@ class FeedBack_Loop():
 
         # get the score of every item
         input_inter = Interaction({
-            'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys()))
+            'uid': torch.tensor(list(self.training_set._dataset.inter_feat[self.uid_field])),
+            'item_id': torch.tensor(list(self.training_set._dataset.inter_feat[self.iid_field]))
         })
         input_inter = self.dataset.join(input_inter)  # join user feature
     
-
         with torch.no_grad():
             try:  # if model have full sort predict
                 input_inter.to(self.model.device)
@@ -160,9 +164,9 @@ class FeedBack_Loop():
         not_active_rows = not_active_users - 1
 
         choices = np.apply_along_axis(np.random.choice, 1, recommender_pred, size = 1).flatten()
-        random_item_history = [int(np.random.choice(x, 1,)) for x in not_recommender_pred]
+        #random_item_history = [int(np.random.choice(x, 1,)) for x in not_recommender_pred]
 
-        np.array(choices)[not_active_rows] = np.array(random_item_history)[not_active_rows]
+        np.array(choices)[not_active_rows] = not_recommender_pred[not_active_rows]
 
         return choices
 
@@ -300,3 +304,35 @@ class FeedBack_Loop():
 
         # individual gini index
         self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [np.mean(metrics.individual_gini(self.training_set._dataset, self.uid_field, self.iid_field))]
+
+
+
+    def generate_not_rec_predictions(self, choice = 'ir'):
+
+        np.random.seed()
+
+        match choice:
+            case 'ir': # individual random
+                # list of interaction lists
+                history = [g[1].to_numpy() for g in pd.DataFrame(self.training_set.dataset.inter_feat.numpy()).groupby('uid')['item_id']]
+                return np.array([int(np.random.choice(x, 1,)) for x in history]) # choose one item per user from the history
+            
+            case 'cr': # collective random
+                # get all unique items
+                items = list(self.training_set._dataset.item_counter.keys())
+                users = list(self.training_set._dataset.user_counter.keys())
+                return np.random.choice(items, len(users)) # choose one item per user
+            
+
+            case 'ip':
+                ##TODO
+                return
+
+
+            case 'cp':
+                # sort item counter and get the first 10
+                pop_items = sorted(self.training_set._dataset.item_counter, key = self.training_set._dataset.item_counter.get, reverse=True)[:10]
+                return np.random.choice(pop_items, len(users)) # choose one item per user
+            
+            case _:
+                raise NotImplementedError
