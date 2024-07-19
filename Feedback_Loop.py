@@ -132,7 +132,7 @@ class FeedBack_Loop():
         with torch.no_grad():
             try:  # if model have full sort predict
                 input_inter.to(self.model.device)
-                scores = self.model.full_sort_predict(self.training_set._dataset.inter_feat).cpu().reshape((users, -1))
+                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
                 # get feature in the interactions
