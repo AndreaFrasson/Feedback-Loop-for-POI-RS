@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'MultiVAE'
+MODEL = 'Pop'
 STEP = 5
 MAXIT = 20
 
@@ -199,5 +199,3 @@ if __name__ == '__main__':
 
             case _:
                 print('metric not implemented')
-
-                
