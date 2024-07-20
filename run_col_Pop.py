@@ -18,6 +18,7 @@ DEVICE_ID = '0'
 
 if __name__ == '__main__':
     # total arguments
+    n = len(sys.argv)
     if n < 3:
         len_step = 5
         epochs = 20
