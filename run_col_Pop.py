@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
 
     fl = FeedBack_Loop(config_dict)
-    fl.loop(epochs, len_step, user_frac=1, hyper_file='MultiVAE.hyper', tuning=True)
+    fl.loop(epochs, len_step, user_frac=0, tuning=False)
 
         # save output
     with open('output/'+fl.config['model']+'_'+str(len_step)+'-'+str(epochs)+'.txt','w') as data:  

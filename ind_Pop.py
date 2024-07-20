@@ -5,7 +5,7 @@ from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
 
-class ind_Random(Pop):
+class ind_Pop(Pop):
     """Random is an fundamental model that recommends random items."""
 
     input_type = InputType.POINTWISE
@@ -13,7 +13,7 @@ class ind_Random(Pop):
 
     def __init__(self, config, dataset):
         self.dataset = dataset
-        super(ind_Random, self).__init__(config, dataset)
+        super(ind_Pop, self).__init__(config, dataset)
         
 
 
@@ -23,18 +23,22 @@ class ind_Random(Pop):
 
     def full_sort_predict(self, interaction):
         users = torch.unique(interaction[self.USER_ID])
-        rand_results = []
+        pop_results = torch.tensor([])
 
         for u in users:
             try:
                 history = interaction[interaction[self.USER_ID] == u][self.ITEM_ID]
-
             except:
                 history = self.dataset.inter_feat[self.dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID]
-            idx = np.random.randint(0,len(history))
-            rand_results.append(int(history[idx]))
 
-        return torch.tensor(rand_results).reshape(-1,1)
+            val, freq = history.unique(return_counts=True)
+            top_items = val[freq.topk(min(10, len(val)))[1]]
+            if len(val) < 10: # if there are less than 10 elements, pad with the most popular one
+                top_items = torch.cat([top_items, top_items[0].reshape(1)])
+
+            pop_results = torch.cat([pop_results, top_items])
+
+        return pop_results.reshape((-1, 10))
     
 
     def evaluate(self, test_interaction):
@@ -42,6 +46,7 @@ class ind_Random(Pop):
 
         k = 10 # numbero of prediction
         results = torch.tensor([]).to(self.device)
+        
         for i in range(k):
             results = torch.cat([results, self.full_sort_predict(test_interaction)], dim = 1)
         
@@ -68,3 +73,6 @@ class ind_Random(Pop):
         }
 
         return results
+    
+
+    

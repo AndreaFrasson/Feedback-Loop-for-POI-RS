@@ -12,6 +12,7 @@ import copy
 from recbole.data import Interaction
 from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
+from ind_Pop import ind_Pop
 
 
 class FeedBack_Loop():
@@ -22,6 +23,14 @@ class FeedBack_Loop():
             self.config_dict['model'] = 'Pop'
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
             self.config_dict['model'] == 'ind_Random'
+        
+        elif self.config_dict['model'] == 'ind_Pop':
+            self.config_dict['model'] = 'Pop'
+            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
+            self.config_dict['model'] == 'ind_Pop'
+        
+        else:
+            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
 
     # first creation of the dataset and set the id variables. Split in training, validation and test 
@@ -67,6 +76,14 @@ class FeedBack_Loop():
                     self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                     self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                     self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+
+                elif self.config_dict['model'] == 'ind_Pop':
+                    self.model = ind_Pop(self.config, self.training_set._dataset).to(self.config['device'])
+                    results = self.model.evaluate(self.test_set)
+                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+                
                 else:
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                     # trainer loading and initialization
@@ -364,12 +381,12 @@ class FeedBack_Loop():
                 return np.random.choice(items, len(users)) # choose one item per user
             
 
-            case 'ip':
+            case 'ip': # individual popularity
                 ##TODO
                 return
 
 
-            case 'cp':
+            case 'cp': # collective popularity (most popular items)
                 # sort item counter and get the first 10
                 pop_items = sorted(self.training_set._dataset.item_counter, key = self.training_set._dataset.item_counter.get, reverse=True)[:10]
                 return np.random.choice(pop_items, len(users)) # choose one item per user
