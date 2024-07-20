@@ -47,5 +47,5 @@ if __name__ == '__main__':
     fl.loop(epochs, len_step, user_frac=0, tuning=False)
 
         # save output
-    with open('output/'+fl.config['model']+'_'+str(len_step)+'-'+str(epochs)+'.txt','w') as data:  
+    with open('output/'+config_dict['model']+'_'+str(len_step)+'-'+str(epochs)+'.txt','w') as data:  
       json.dump(fl.metrics, data)
