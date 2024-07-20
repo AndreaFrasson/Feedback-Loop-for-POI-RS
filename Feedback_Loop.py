@@ -11,13 +11,17 @@ import torch
 import copy
 from recbole.data import Interaction
 from recbole.trainer import HyperTuning
+from ind_Random import ind_Random
 
 
 class FeedBack_Loop():
 
     def __init__(self, config_dict):
         self.config_dict = config_dict
-        self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
+        if self.config_dict['model'] == 'ind_Random':
+            self.config_dict['model'] = 'Pop'
+            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
+            self.config_dict['model'] == 'ind_Random'
 
 
     # first creation of the dataset and set the id variables. Split in training, validation and test 
@@ -57,21 +61,30 @@ class FeedBack_Loop():
             # every len_step epochs, retrain of the model
             if c % self.len_step == 0:
                 # get model
-                self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
-                # trainer loading and initialization
-                self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config['model'])(self.config, self.model)
-                # model training
-                best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-                results = self.trainer.evaluate(self.test_set)
-                self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+                if self.config_dict['model'] == 'ind_Random':
+                    self.model = ind_Random(self.config, self.training_set._dataset).to(self.config['device'])
+                    results = self.model.evaluate(self.test_set)
+                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+                else:
+                    self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
+                    # trainer loading and initialization
+                    self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
+                    # model training
+                    best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+                    results = self.trainer.evaluate(self.test_set)
+                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
             
             
             
             #extract user that will not see the recommendations
             if user_frac < 1:
+
                 user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.len_step
+
                 np.random.seed()
                 user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
                                             int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
