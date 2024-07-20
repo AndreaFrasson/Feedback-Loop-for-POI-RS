@@ -23,9 +23,13 @@ if __name__ == '__main__':
     if n < 3:
         len_step = 5
         epochs = 20
+    if n < 4:
+        len_step = int(sys.argv[1])
+        epochs = int(sys.argv[2])
     else:
         len_step = int(sys.argv[1])
         epochs = int(sys.argv[2])
+        not_rec = sys.argv[2]
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
