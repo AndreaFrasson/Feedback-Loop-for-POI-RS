@@ -21,13 +21,13 @@ if __name__ == '__main__':
     # total arguments
     n = len(sys.argv)
     if n < 3:
-        m = 5
-        MaxIt = 20
+        len_step = 5
+        epochs = 20
     else:
-        m = int(sys.argv[1])
-        MaxIt = int(sys.argv[2])
+        len_step = int(sys.argv[1])
+        epochs = int(sys.argv[2])
 
-        # make the atomic files form the data
+    # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
     preprocess(seed)
 
@@ -45,8 +45,8 @@ if __name__ == '__main__':
 
 
     fl = FeedBack_Loop(config_dict)
-    fl.loop(MaxIt, m, user_frac=1, hyper_file='MultiVAE.hyper', tuning=True)
+    fl.loop(epochs, len_step, user_frac=1, hyper_file='MultiVAE.hyper', tuning=True)
 
         # save output
-    with open('output/'+fl.config['model']+'_'+str(m)+'-'+str(MaxIt)+'.txt','w') as data:  
+    with open('output/'+fl.config['model']+'_'+str(m)+'-'+str(epochs)+'.txt','w') as data:  
       json.dump(fl.metrics, data)
