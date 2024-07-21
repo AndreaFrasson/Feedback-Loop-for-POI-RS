@@ -382,8 +382,20 @@ class FeedBack_Loop():
             
 
             case 'ip': # individual popularity
-                ##TODO
-                return
+                pop_results = torch.tensor([])
+
+                for u in users:
+                    history = self.training_set._dataset.inter_feat[
+                            self.training_set._dataset.inter_feat[self.uid_field] == u][self.iid_field]
+
+                    val, freq = history.unique(return_counts=True)
+                    top_items = val[freq.topk(min(10, len(val)))[1]]
+                    if len(val) < 10: # if there are less than 10 elements, pad with the most popular one
+                        top_items = torch.cat([top_items, top_items[0].reshape(1)])
+
+                    pop_results = torch.cat([pop_results, top_items])
+
+                return pop_results.numpy().reshape((-1, 10))
 
 
             case 'cp': # collective popularity (most popular items)
