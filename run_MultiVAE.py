@@ -29,7 +29,7 @@ if __name__ == '__main__':
     else:
         len_step = int(sys.argv[1])
         epochs = int(sys.argv[2])
-        not_rec = sys.argv[2]
+        not_rec = sys.argv[3]
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
