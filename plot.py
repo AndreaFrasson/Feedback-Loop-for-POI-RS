@@ -3,9 +3,10 @@ import numpy as np
 import json
 
 
-MODEL = 'MultiVAE_cp'
+MODEL = 'col_Pop_cr'
 STEP = 10
 MAXIT = 10
+P = 0.8
 
 def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 
@@ -24,7 +25,7 @@ def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
-    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.png')
+    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'_'+str(P)+'.png')
 
     return 
 
@@ -51,14 +52,14 @@ def make_scatter(x, mean, var, title, ylab = '', vl = 0, x2 = None):
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
-    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.png')
+    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'_'+str(P)+'.png')
 
     return 
 
 if __name__ == '__main__':
 
     # reading the data from the file 
-    with open('output/'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'.txt', 'r') as f:
+    with open('output/'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'_'+str(P)+'.txt', 'r') as f:
         data = f.read().replace('\'', '\"')
       
     # reconstructing the data as a dictionary 
