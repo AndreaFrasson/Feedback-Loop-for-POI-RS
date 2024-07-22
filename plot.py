@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'Pop_ir'
+MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
 
