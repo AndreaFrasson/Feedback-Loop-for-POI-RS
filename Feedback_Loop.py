@@ -99,12 +99,14 @@ class FeedBack_Loop():
             
             #extract user that will not see the recommendations
             if user_frac < 1:
-
-                user_frac = len(list(self.training_set._dataset.user_counter.keys())) / self.len_step
+                
+                users = list(self.training_set._dataset.user_counter.keys())
+                user_num = len(users) / self.len_step
 
                 np.random.seed()
-                user_not_active = np.random.choice(list(self.training_set._dataset.user_counter.keys()),
-                                            int(len(list(self.training_set._dataset.user_counter.keys())) * user_frac)) 
+                user_not_active = np.random.choice(users,
+                                            int(user_num)) 
+                
                 rows_not_active = user_not_active - 1 
 
             else:
@@ -118,11 +120,11 @@ class FeedBack_Loop():
             
             # choose one item
             chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
-
-            self.update_incremental(chosen_items)
                 
             if c % self.len_step == 0:
                 self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
+
+            self.update_incremental(chosen_items)
 
 
             

@@ -3,9 +3,9 @@ import numpy as np
 import json
 
 
-MODEL = 'MultiVAE'
-STEP = 5
-MAXIT = 20
+MODEL = 'MultiVAE_cp'
+STEP = 20
+MAXIT = 10
 
 def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 
@@ -20,6 +20,8 @@ def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 
     ax.set_ylabel(ylab, size = 20)
     ax.tick_params(axis='both', which='major', labelsize=20)
+
+    ax.get_ylim()
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
