@@ -4,7 +4,7 @@ import json
 
 
 MODEL = 'Pop_ir'
-STEP = 20
+STEP = 10
 MAXIT = 10
 
 def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
