@@ -20,16 +20,14 @@ DEVICE_ID = '0'
 if __name__ == '__main__':
     # total arguments
     n = len(sys.argv)
-    if n < 3:
+    if n < 5:
         len_step = 5
         epochs = 20
-    if n < 4:
-        len_step = int(sys.argv[1])
-        epochs = int(sys.argv[2])
     else:
         len_step = int(sys.argv[1])
         epochs = int(sys.argv[2])
         not_rec = sys.argv[3]
+        k = float(sys.argv[4])
 
     # make the atomic files form the data
     seed = 1234 # to get always the same users in train/test
@@ -47,9 +45,9 @@ if __name__ == '__main__':
         }
 
 
-    fl = FeedBack_Loop(config_dict)
-    fl.loop(epochs, len_step, user_frac=0, tuning=False)
+    fl = FeedBack_Loop(config_dict, not_rec)
+    fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
         # save output
-    with open('output/ind_Pop_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'.txt','w') as data:  
+    with open('output/ind_Pop_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
       json.dump(fl.metrics, data)

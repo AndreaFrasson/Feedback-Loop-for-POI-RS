@@ -17,8 +17,9 @@ from ind_Pop import ind_Pop
 
 class FeedBack_Loop():
 
-    def __init__(self, config_dict):
+    def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
+        self.not_rec = not_rec
         if self.config_dict['model'] == 'ind_Random':
             self.config_dict['model'] = 'Pop'
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
@@ -49,7 +50,7 @@ class FeedBack_Loop():
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
     # Then, the dataset is prepared and splitted and the loop starts. 
-    def loop(self, epochs, len_step, choice = 'r', not_rec = 'ir', tuning = False, hyper_file = None, user_frac = 0.2):
+    def loop(self, epochs, len_step, choice = 'r', k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
         self.len_step = len_step
@@ -114,12 +115,12 @@ class FeedBack_Loop():
 
             #recommender choices
             rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
-
+            
             # not recommender choices
-            not_rec_predictions = self.generate_not_rec_predictions(not_rec)
+            not_rec_predictions = self.generate_not_rec_predictions(self.not_rec)
             
             # choose one item
-            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active)
+            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active, k)
                 
             if c % self.len_step == 0:
                 self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
@@ -207,8 +208,8 @@ class FeedBack_Loop():
     
     
 
-    def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active):
-        k = 0.5 # percentuale utenti che non seguono il recommender
+    def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active, k = 0.3):
+        # percentuale utenti che non seguono il recommender
 
         users = set(self.training_set._dataset.user_counter.keys())
 
@@ -370,6 +371,8 @@ class FeedBack_Loop():
 
         np.random.seed()
 
+        users = list(self.training_set._dataset.user_counter.keys())
+
         match choice:
             case 'ir': # individual random
                 # list of interaction lists
@@ -379,7 +382,6 @@ class FeedBack_Loop():
             case 'cr': # collective random
                 # get all unique items
                 items = list(self.training_set._dataset.item_counter.keys())
-                users = list(self.training_set._dataset.user_counter.keys())
                 return np.random.choice(items, len(users)) # choose one item per user
             
 
@@ -397,7 +399,7 @@ class FeedBack_Loop():
 
                     pop_results = torch.cat([pop_results, top_items])
 
-                return pop_results.numpy().reshape((-1, 10))
+                return np.apply_along_axis(np.random.choice, 1, pop_results.numpy().reshape((-1, 10)))
 
 
             case 'cp': # collective popularity (most popular items)
