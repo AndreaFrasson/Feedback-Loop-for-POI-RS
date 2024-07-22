@@ -21,7 +21,6 @@ def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
     ax.set_ylabel(ylab, size = 20)
     ax.tick_params(axis='both', which='major', labelsize=20)
 
-
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
@@ -43,6 +42,12 @@ def make_scatter(x, mean, var, title, ylab = '', vl = 0, x2 = None):
     ax.set_ylabel(ylab, size = 20)
     ax.tick_params(axis='both', which='major', labelsize=20)
 
+    bo,up = ax.get_ylim()
+    try:
+        bo -= np.absolute(np.log10(bo))
+    except:
+        bo = bo
+    ax.set_ylim(max(0, bo), up +np.absolute(np.log10(up)))
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
