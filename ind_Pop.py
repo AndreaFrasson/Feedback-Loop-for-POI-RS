@@ -23,32 +23,22 @@ class ind_Pop(Pop):
 
     def full_sort_predict(self, interaction):
         users = torch.unique(interaction[self.USER_ID])
-        pop_results = torch.tensor([])
 
-        for u in users:
-            try:
-                history = interaction[interaction[self.USER_ID] == u][self.ITEM_ID]
-            except:
-                history = self.dataset.inter_feat[self.dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID]
+        m = self.dataset.inter_matrix().toarray()
 
-            val, freq = history.unique(return_counts=True)
-            top_items = val[freq.topk(min(10, len(val)))[1]]
-            if len(val) < 10: # if there are less than 10 elements, pad with the most popular one
-                top_items = torch.cat([top_items, top_items[0].reshape(1)])
+        pop_results = np.apply_along_axis(np.argsort, 1, m)[1:users[-1]+1, -10:]
 
-            pop_results = torch.cat([pop_results, top_items])
-
-        return pop_results.reshape((-1, 10))
+        return torch.tensor(pop_results).reshape((-1, 10))
     
 
-    def evaluate(self, test_interaction):
+    def evaluate(self, test_interaction, dataset):
         users = torch.unique(test_interaction[self.USER_ID])
 
-        k = 10 # numbero of prediction
+        k = 10 # number of prediction
         results = torch.tensor([]).to(self.device)
         
         for i in range(k):
-            results = torch.cat([results, self.full_sort_predict(test_interaction)], dim = 1)
+            results = torch.cat([results, self.full_sort_predict(test_interaction, dataset)], dim = 1)
         
         # compute metrics and return a dict
         y = []

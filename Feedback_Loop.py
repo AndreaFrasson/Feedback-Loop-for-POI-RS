@@ -44,6 +44,8 @@ class FeedBack_Loop():
         self.time_field = self.dataset.time_field
 
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
+        self.adj_mat = pd.crosstab(self.training_set._dataset.inter_feat.numpy()[self.uid_field], 
+                                   self.training_set._dataset.inter_feat.numpy()[self.iid_field]).transpose()
     
 
     # Main Loop 
@@ -72,14 +74,14 @@ class FeedBack_Loop():
             if c % self.len_step == 0:
                 # get model
                 if self.config_dict['model'] == 'ind_Random':
-                    self.model = ind_Random(self.config, self.training_set._dataset).to(self.config['device'])
+                    self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
                     self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                     self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                     self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
                 elif self.config_dict['model'] == 'ind_Pop':
-                    self.model = ind_Pop(self.config, self.training_set._dataset).to(self.config['device'])
+                    self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
                     self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                     self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
@@ -117,7 +119,7 @@ class FeedBack_Loop():
             rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
             
             # not recommender choices
-            not_rec_predictions = self.generate_not_rec_predictions(self.not_rec)
+            not_rec_predictions = self.generate_not_rec_predictions()
             
             # choose one item
             chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active, k)
@@ -175,28 +177,7 @@ class FeedBack_Loop():
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
                 # get feature in the interactions
-
-                def feat_vector(array, dictionary):
-                    return [dictionary[x] for x in list(array)]
-                
-                items = self.training_set._dataset.inter_feat['item_id'].numpy().reshape(866,-1)
-                cat_dict = self.training_set._dataset.item_feat['venue_category_name'].numpy()
-                lat_dict = self.training_set._dataset.item_feat['lat'].numpy()
-                lon_dict = self.training_set._dataset.item_feat['lon'].numpy()
-                
-
-                input_inter.update(Interaction({'item_id': torch.tensor(items).to(torch.device(self.model.device))}))
-
-                cat = np.apply_along_axis(feat_vector, 1, items, dictionary = cat_dict)
-                input_inter.update(Interaction({'venue_category_name': torch.tensor(cat).to(torch.device(self.model.device))}))
-
-                lat = np.apply_along_axis(feat_vector, 1, items, dictionary = lat_dict)
-                input_inter.update(Interaction({'lat': torch.tensor(lat).to(torch.device(self.model.device))}))
-
-                lon = np.apply_along_axis(feat_vector, 1, items, dictionary = lon_dict)
-                input_inter.update(Interaction({'lon': torch.tensor(lon).to(torch.device(self.model.device))}))
-
-                scores = self.model.predict(input_inter)
+                raise NotImplementedError
             
             scores = scores.view(-1, self.dataset.item_num)
         
@@ -368,17 +349,21 @@ class FeedBack_Loop():
 
 
 
-    def generate_not_rec_predictions(self, choice = 'ir'):
+    def generate_not_rec_predictions(self):
 
         np.random.seed()
 
         users = list(self.training_set._dataset.user_counter.keys())
+        m = self.training_set.dataset.inter_matrix().toarray()[1:users[-1]+1, :]
 
-        match choice:
+        match self.not_rec:
             case 'ir': # individual random
-                # list of interaction lists
-                history = [g[1].to_numpy() for g in pd.DataFrame(self.training_set.dataset.inter_feat.numpy()).groupby('uid')['item_id']]
-                return np.array([int(np.random.choice(x, 1,)) for x in history]) # choose one item per user from the history
+                def choose_ind_random(interaction):
+                    return np.random.choice(interaction.nonzero()[0], 10)
+                
+                random_list = np.apply_along_axis(choose_ind_random, 1, m)
+
+                return  np.apply_along_axis(np.random.choice, 1, random_list)# choose one item per user from the history
             
             case 'cr': # collective random
                 # get all unique items
@@ -387,20 +372,8 @@ class FeedBack_Loop():
             
 
             case 'ip': # individual popularity
-                pop_results = torch.tensor([])
-
-                for u in users:
-                    history = self.training_set._dataset.inter_feat[
-                            self.training_set._dataset.inter_feat[self.uid_field] == u][self.iid_field]
-
-                    val, freq = history.unique(return_counts=True)
-                    top_items = val[freq.topk(min(10, len(val)))[1]]
-                    if len(val) < 10: # if there are less than 10 elements, pad with the most popular one
-                        top_items = torch.cat([top_items, top_items[0].reshape(1)])
-
-                    pop_results = torch.cat([pop_results, top_items])
-
-                return np.apply_along_axis(np.random.choice, 1, pop_results.numpy().reshape((-1, 10)))
+                ind_pop_items = np.apply_along_axis(np.argsort, 1, m)[1:users[-1]+1, -10:]
+                return np.apply_along_axis(np.random.choice, 1, ind_pop_items)
 
 
             case 'cp': # collective popularity (most popular items)
