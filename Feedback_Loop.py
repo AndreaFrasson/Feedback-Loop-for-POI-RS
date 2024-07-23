@@ -361,9 +361,9 @@ class FeedBack_Loop():
                 def choose_ind_random(interaction):
                     return np.random.choice(interaction.nonzero()[0], 10)
                 
-                random_list = np.apply_along_axis(choose_ind_random, 1, m)
+                random_list = np.apply_along_axis(choose_ind_random, 1, m) # select 10 non-zero items from the history (ind. for each user)
 
-                return  np.apply_along_axis(np.random.choice, 1, random_list)# choose one item per user from the history
+                return  np.apply_along_axis(np.random.choice, 1, random_list)# choose one item per user from his history
             
             case 'cr': # collective random
                 # get all unique items
@@ -372,8 +372,8 @@ class FeedBack_Loop():
             
 
             case 'ip': # individual popularity
-                ind_pop_items = np.apply_along_axis(np.argsort, 1, m)
-                return np.apply_along_axis(np.random.choice, 1, ind_pop_items)
+                ind_pop_items = np.apply_along_axis(np.argsort, 1, m) # top-k items for each user
+                return np.apply_along_axis(np.random.choice, 1, ind_pop_items) # choose one item per user
 
 
             case 'cp': # collective popularity (most popular items)
