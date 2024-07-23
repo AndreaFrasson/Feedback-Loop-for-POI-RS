@@ -372,7 +372,7 @@ class FeedBack_Loop():
             
 
             case 'ip': # individual popularity
-                ind_pop_items = np.apply_along_axis(np.argsort, 1, m)[1:users[-1]+1, -10:]
+                ind_pop_items = np.apply_along_axis(np.argsort, 1, m)
                 return np.apply_along_axis(np.random.choice, 1, ind_pop_items)
 
 
