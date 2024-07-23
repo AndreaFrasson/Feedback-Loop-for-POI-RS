@@ -269,11 +269,12 @@ class FeedBack_Loop():
                     
 
         self.validation_set._dataset.inter_feat = Interaction(new_valid_dict) # set new valid
-
+        self.validation_set._dataset.inter_feat.sort([self.uid_field, self.time_field])
         # translate current training set and old validation set in dataframe
         training_df = pd.DataFrame(self.training_set._dataset.inter_feat.numpy())
         new_train = pd.concat([training_df, pd.DataFrame(new_training_dict)], axis=0).reset_index(drop=True)
-        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))    
+        self.training_set._dataset.inter_feat = Interaction(new_train.copy(deep = True))   
+        self.training_set._dataset.inter_feat.sort([self.uid_field, self.time_field]) 
 
         torch.cuda.empty_cache()
 
