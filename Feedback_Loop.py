@@ -354,7 +354,7 @@ class FeedBack_Loop():
         np.random.seed()
 
         users = list(self.training_set._dataset.user_counter.keys())
-        m = self.training_set.dataset.inter_matrix().toarray()[1:users[-1]+1, :]
+        m = self.training_set.dataset.inter_matrix().toarray()[users, :]
 
         match self.not_rec:
             case 'ir': # individual random
