@@ -26,7 +26,7 @@ class ind_Pop(Pop):
 
         m = self.dataset.inter_matrix().toarray()
 
-        pop_results = np.apply_along_axis(np.argsort, 1, m)[1:users[-1]+1, -10:]
+        pop_results = np.apply_along_axis(np.argsort, 1, m)[users, -10:]
 
         return torch.tensor(pop_results).reshape((-1, 10))
     
