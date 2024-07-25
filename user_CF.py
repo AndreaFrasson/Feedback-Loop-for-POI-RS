@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 
-class CF(Pop):
+class uCF(Pop):
     """Random is an fundamental model that recommends random items."""
 
     input_type = InputType.POINTWISE

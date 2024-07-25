@@ -2,7 +2,7 @@ from preprocess import preprocess
 import os
 import sys
 from Feedback_Loop import FeedBack_Loop
-from user_CF import CF
+from user_CF import uCF
 import json
 
 # SETTINGS

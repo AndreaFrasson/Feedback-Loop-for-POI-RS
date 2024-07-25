@@ -13,7 +13,7 @@ from recbole.data import Interaction
 from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
 from ind_Pop import ind_Pop
-from user_CF import CF
+from user_CF import uCF
 
 
 class FeedBack_Loop():
