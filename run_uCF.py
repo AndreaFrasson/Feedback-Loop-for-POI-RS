@@ -2,11 +2,11 @@ from preprocess import preprocess
 import os
 import sys
 from Feedback_Loop import FeedBack_Loop
-from ind_Pop import ind_Pop
+from user_CF import CF
 import json
 
 # SETTINGS
-MODEL = 'ind_Pop'
+MODEL = 'uCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -49,5 +49,5 @@ if __name__ == '__main__':
     fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
         # save output
-    with open('output/ind_Pop_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
+    with open('output/uCF_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
       json.dump(fl.metrics, data)

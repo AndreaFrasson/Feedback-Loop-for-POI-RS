@@ -13,6 +13,7 @@ from recbole.data import Interaction
 from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
 from ind_Pop import ind_Pop
+from user_CF import CF
 
 
 class FeedBack_Loop():
@@ -82,6 +83,13 @@ class FeedBack_Loop():
 
                 elif self.config_dict['model'] == 'ind_Pop':
                     self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
+                    results = self.model.evaluate(self.test_set)
+                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+                
+                elif self.config_dict['model'] == 'uCF':
+                    self.model = CF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
                     self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                     self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
