@@ -77,23 +77,14 @@ class FeedBack_Loop():
                 if self.config_dict['model'] == 'ind_Random':
                     self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
-                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
 
                 elif self.config_dict['model'] == 'ind_Pop':
                     self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
-                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
                 
                 elif self.config_dict['model'] == 'uCF':
                     self.model = CF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
-                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
                 
                 else:
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
@@ -102,9 +93,10 @@ class FeedBack_Loop():
                     # model training
                     best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
                     results = self.trainer.evaluate(self.test_set)
-                    self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
-                    self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
-                    self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+
+                self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+                self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+                self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
             
             
             
