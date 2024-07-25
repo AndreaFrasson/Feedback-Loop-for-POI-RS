@@ -16,7 +16,7 @@ class uCF(Pop):
 
     def __init__(self, config, dataset):
         self.dataset = dataset
-        super(CF, self).__init__(config, dataset)
+        super(uCF, self).__init__(config, dataset)
         
 
 

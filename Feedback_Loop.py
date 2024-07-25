@@ -83,7 +83,7 @@ class FeedBack_Loop():
                     results = self.model.evaluate(self.test_set)
                 
                 elif self.config_dict['model'] == 'uCF':
-                    self.model = CF(self.config, self.dataset).to(self.config['device'])
+                    self.model = uCF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set)
                 
                 else:
