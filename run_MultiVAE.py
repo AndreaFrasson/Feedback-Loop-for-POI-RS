@@ -50,5 +50,5 @@ if __name__ == '__main__':
     fl.loop(epochs, len_step, k = k, user_frac=0, tuning=True, hyper_file = 'MultiVAE.hyper')
 
         # save output
-    with open('output/col_Pop_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
+    with open('output/MultiVAE_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
       json.dump(fl.metrics, data)
