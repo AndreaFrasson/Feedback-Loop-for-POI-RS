@@ -21,18 +21,16 @@ class FeedBack_Loop():
     def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
         self.not_rec = not_rec
-        if self.config_dict['model'] == 'ind_Random':
+
+        try: 
+            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
+
+        except:
+            my_model = self.config_dict['model']
             self.config_dict['model'] = 'Pop'
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-            self.config_dict['model'] == 'ind_Random'
-        
-        elif self.config_dict['model'] == 'ind_Pop':
-            self.config_dict['model'] = 'Pop'
-            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-            self.config_dict['model'] == 'ind_Pop'
-        
-        else:
-            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
+            self.config_dict['model'] == my_model
+            
 
 
     # first creation of the dataset and set the id variables. Split in training, validation and test 
