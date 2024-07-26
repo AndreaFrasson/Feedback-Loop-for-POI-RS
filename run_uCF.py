@@ -44,10 +44,16 @@ if __name__ == '__main__':
             'device_id': DEVICE_ID,
         }
 
+    results = {}
+    for i in range(50):
+        fl = FeedBack_Loop(config_dict, not_rec)
+        fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
-    fl = FeedBack_Loop(config_dict, not_rec)
-    fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
+        for i in fl.metrics.keys():
+            results[i] = results.get(i, []) + [fl.metrics[i][0]]
 
-        # save output
+
+
+    # save output
     with open('output/uCF_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
-      json.dump(fl.metrics, data)
+        json.dump(results, data)

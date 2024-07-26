@@ -3,10 +3,10 @@ import numpy as np
 import json
 
 
-MODEL = 'col_Pop_cr'
+MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
-P = 0.8
+P = 0.3
 
 def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
 

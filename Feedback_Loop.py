@@ -51,7 +51,7 @@ class FeedBack_Loop():
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
     # Then, the dataset is prepared and splitted and the loop starts. 
-    def loop(self, epochs, len_step, choice = 'r', k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2):
+    def loop(self, epochs, len_step, k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
         self.len_step = len_step
