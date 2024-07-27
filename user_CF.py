@@ -9,7 +9,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from scipy import sparse
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import euclidean_distances
 
 
 class uCF(Pop):
@@ -39,7 +39,7 @@ class uCF(Pop):
         # average interactions for all users
         avg_int = (m.sum(1) / m.astype(bool).sum(axis=1)).flatten()
 
-        sim_mat = cosine_similarity(m)
+        sim_mat = euclidean_distances(m)
 
         # neghbors for each user
         N_u = 3

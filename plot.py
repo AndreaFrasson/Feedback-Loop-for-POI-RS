@@ -3,7 +3,7 @@ import numpy as np
 import json
 
 
-MODEL = 'MultiVAE_cp'
+MODEL = 'uCF_ip'
 STEP = 10
 MAXIT = 10
 P = 0.3
