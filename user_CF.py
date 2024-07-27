@@ -4,16 +4,16 @@ import numpy as np
 from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
+from recbole.data import Interaction
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
-from recbole.data import Interaction
 
 from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
 
 
 class uCF(Pop):
-    """Random is an fundamental model that recommends random items."""
+    """Random is an fundamental self that recommends random items."""
 
     input_type = InputType.POINTWISE
     type = ModelType.TRADITIONAL
@@ -32,9 +32,9 @@ class uCF(Pop):
 
         users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
         if dataset is None:
-            m = sparse.csr_matrix(self.dataset.inter_matrix())[users.flatten(),:]
+            m = sparse.csr_matrix(self.dataset.inter_matrix())
         else:
-            m = sparse.csr_matrix(dataset.inter_matrix())[users.flatten(),:]
+            m = sparse.csr_matrix(dataset.inter_matrix())
 
         # average interactions for all users
         avg_int = (m.sum(1) / m.astype(bool).sum(axis=1)).flatten()
@@ -71,26 +71,25 @@ class uCF(Pop):
         users = torch.unique(dataset.inter_feat[self.USER_ID])
 
         k = 10 # number of prediction
-        results = torch.tensor([]).to(self.device)
-        
-        for i in range(k):
-            results = torch.cat([results, self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)], dim = 1)
-        
-        # compute metrics and return a dict
-        y = []
-        for u in users:
-            y.append(int(test_interaction[test_interaction[self.USER_ID] == u][self.ITEM_ID][-1]))
-        
-        
+
+        prediction = self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)
+
+
         hit_sum = 0 
         prec_sum = 0
         rec_sum = 0
 
         for i in range(len(y)):
-            hit_sum += int(y[i] in results[i,:])
-            intersection = len(set(results[i,:].numpy()).intersection(set([y[i]])))
+            hit_sum += int(y[i] in prediction[i,:])
+            intersection = len(set(prediction[i,:]).intersection(set([y[i]])))
             prec_sum +=  intersection / len([y[0]])
-            rec_sum += intersection / len(results[i,:])
+            rec_sum += intersection / len(prediction[i,:])
+
+
+        # compute metrics and return a dict
+        y = []
+        for u in users:
+            y.append(int(dataset.inter_feat[dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID][-1]))
 
         results = {
             'hit@10': hit_sum/len(users),
