@@ -46,12 +46,13 @@ if __name__ == '__main__':
         }
 
     results = {}
+    
     for i in range(1):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
         for i in fl.metrics.keys():
-            results[i] = results.get(i, []) + [fl.metrics[i][0]]
+            results[i] = results.get(i, []) + [fl.metrics[i]]
 
 
 
