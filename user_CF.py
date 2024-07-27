@@ -66,8 +66,8 @@ class uCF(Pop):
         return pred
     
 
-    def evaluate(self, test_interaction, dataset):
-        users = torch.unique(test_interaction[self.USER_ID])
+    def evaluate(self, dataset):
+        users = torch.unique(dataset.inter_feat[self.USER_ID])
 
         k = 10 # number of prediction
         results = torch.tensor([]).to(self.device)

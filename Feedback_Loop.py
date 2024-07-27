@@ -18,18 +18,25 @@ from user_CF import uCF
 
 class FeedBack_Loop():
 
+    # initialiazation of the class Feedback loop
+    # save the original configuration and the 'control strategy' (what and individual does if 
+    # he/she doesn't follow the recommender)
     def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
         self.not_rec = not_rec
 
+        print(self.config_dict['model'])
+
+        # if we build a custom model, it returns an error, intercept and build a generic pop model, but save the chosen
+        # model for later
         try: 
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
         except:
-            my_model = self.config_dict['model']
+            my_model = copy.copy(self.config_dict['model'])
             self.config_dict['model'] = 'Pop'
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-            self.config_dict['model'] == my_model
+            self.config_dict['model'] = my_model
             
 
 
@@ -49,8 +56,7 @@ class FeedBack_Loop():
 
     # Main Loop 
     # if not specified, the model uses default values, otherwise before going in the loop it performs
-    # a random search to tune the hyperparameters (dataset splitted in train-val-test). 
-    # Then, the dataset is prepared and splitted and the loop starts. 
+    # a random search to tune the hyperparameters (dataset splitted in train-val-test).  
     def loop(self, epochs, len_step, k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2):
 
         self.epochs = epochs
@@ -65,6 +71,12 @@ class FeedBack_Loop():
 
         self.initialize()
 
+        # since the experiment is build as 
+        # for each epoch do:
+        #   n = 0
+        #   while n < simulation_steps:
+        #     ....
+        # iterations is a variable to save the total number of iterations to use a single for
         iterations = self.epochs * self.len_step
 
         for c in tqdm(range(iterations)):
@@ -95,6 +107,8 @@ class FeedBack_Loop():
                 self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+                
+                print(self.model)
             
             
             
@@ -312,38 +326,38 @@ class FeedBack_Loop():
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']
-        self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [(np.mean(rog), np.std(rog))]
+        self.metrics['rog_ind'] = self.metrics.get('rog_ind', []) + [np.mean(rog)]
         # radius of gyration k = 2 (individual)
         k_rog = metrics.compute_rog(self.training_set._dataset, k = 2)['radius_of_gyration']
-        self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [(np.mean(k_rog), np.std(k_rog))]
+        self.metrics['rog_ind_2'] = self.metrics.get('rog_ind_2', []) + [np.mean(k_rog)]
        
         # distinct items for each user (individual)
         di = metrics.distinct_items(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [(np.mean(di), np.std(di))]
+        self.metrics['D_ind'] = self.metrics.get('D_ind', []) + [np.mean(di)]
 
         # old items suggested (individual)
-        self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [metrics.old_items_suggested(
-                                                                           recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
+        old = metrics.old_items_suggested(recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)
+        self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [np.mean(old)]
         
         # new items suggested (individual)
-        self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [metrics.new_items_suggested(
-                                                                           recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)]
+        new = metrics.old_items_suggested(recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)
+        self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [np.mean(new)]
         # mean entropy (individual)
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
-        self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [(np.mean(entropy['entropy']), np.std(entropy['entropy']))]
+        self.metrics['S_ind'] = self.metrics.get('S_ind', []) + [np.mean(entropy['entropy'])]
 
         # mean entropy (collective)
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.iid_field, self.uid_field)['entropy']
-        self.metrics['S_col'] = self.metrics.get('S_col', []) + [(np.mean(entropy), np.std(entropy))]
+        self.metrics['S_col'] = self.metrics.get('S_col', []) + [np.mean(entropy)]
 
         # explore and return events (individual)
         explore, returns = metrics.get_explore_returns(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [(np.mean(explore), np.std(explore))]
-        self.metrics['Ret_ind'] = self.metrics.get('Ret_ind', []) + [(np.mean(returns), np.mean(returns))]
+        self.metrics['Expl_ind'] = self.metrics.get('Expl_ind', []) + [np.mean(explore)]
+        self.metrics['Ret_ind'] = self.metrics.get('Ret_ind', []) + [np.mean(returns)]
 
         # individual gini index
         gini_ind = metrics.individual_gini(self.training_set._dataset, self.uid_field, self.iid_field)
-        self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [(np.mean(gini_ind), np.std(gini_ind))]
+        self.metrics['Gini_ind'] = self.metrics.get('Gini_ind', []) + [np.mean(gini_ind)]
 
 
 

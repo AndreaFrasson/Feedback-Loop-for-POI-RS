@@ -4,6 +4,7 @@ import sys
 from Feedback_Loop import FeedBack_Loop
 from user_CF import uCF
 import json
+import torch
 
 # SETTINGS
 MODEL = 'uCF'
@@ -11,7 +12,7 @@ DATA_PATH = os.getcwd()
 TOP_K = 10
 DATASET = 'foursquare'
 EPOCHS = 20
-DEVICE_ID = '0'
+DEVICE_ID = '1'
 
 # Default parameters
 
@@ -41,11 +42,11 @@ if __name__ == '__main__':
             'dataset': DATASET,
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
-            'device_id': DEVICE_ID,
+            'gpu_id': DEVICE_ID,
         }
 
     results = {}
-    for i in range(50):
+    for i in range(20):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 

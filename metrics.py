@@ -100,7 +100,7 @@ def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
     for u,g in pd.DataFrame(dataset.inter_feat.numpy()).groupby(uid_field):
         old_items.append(sum(el in recommended_items[u-1] for el in set(g[iid_field].values)))
 
-    return np.mean(old_items), np.var(old_items)
+    return old_items
 
 
 
@@ -112,7 +112,7 @@ def new_items_suggested(recommended_items, dataset, uid_field, iid_field):
         old_items = sum(el in recommended_items[u-1] for el in set(g[iid_field].values))
         new_items.append(len(recommended_items[u-1]) - old_items)
 
-    return np.mean(new_items), np.var(new_items)
+    return new_items
 
 
 
