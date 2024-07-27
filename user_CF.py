@@ -6,6 +6,7 @@ from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
+from recbole.data import Interaction
 
 from scipy import sparse
 from sklearn.metrics.pairwise import cosine_similarity
@@ -73,7 +74,7 @@ class uCF(Pop):
         results = torch.tensor([]).to(self.device)
         
         for i in range(k):
-            results = torch.cat([results, self.full_sort_predict(test_interaction, dataset)], dim = 1)
+            results = torch.cat([results, self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)], dim = 1)
         
         # compute metrics and return a dict
         y = []

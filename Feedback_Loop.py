@@ -86,15 +86,15 @@ class FeedBack_Loop():
                 # get model
                 if self.config_dict['model'] == 'ind_Random':
                     self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set)
+                    results = self.model.evaluate(self.test_set._dataset)
 
                 elif self.config_dict['model'] == 'ind_Pop':
                     self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set)
+                    results = self.model.evaluate(self.test_set._dataset)
                 
                 elif self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set)
+                    results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
