@@ -14,7 +14,8 @@ from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
 from ind_Pop import ind_Pop
 from user_CF import uCF
-
+import warnings
+warnings.filterwarnings("ignore")
 
 class FeedBack_Loop():
 
@@ -24,8 +25,6 @@ class FeedBack_Loop():
     def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
         self.not_rec = not_rec
-
-        print(self.config_dict['model'])
 
         # if we build a custom model, it returns an error, intercept and build a generic pop model, but save the chosen
         # model for later
@@ -108,7 +107,6 @@ class FeedBack_Loop():
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
                 
-                print(self.model)
             
             
             
@@ -172,12 +170,12 @@ class FeedBack_Loop():
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
     def __prediction(self):
 
-        users = len(self.training_set._dataset.user_counter.keys())
+        users = list(self.training_set._dataset.user_counter.keys())
 
 
         # get the score of every item
         input_inter = Interaction({
-            'uid': torch.tensor(list(self.training_set._dataset.user_counter.keys()))
+            'uid': torch.tensor(users)
         })
         input_inter = self.dataset.join(input_inter)  # join user feature
     
@@ -185,19 +183,21 @@ class FeedBack_Loop():
         with torch.no_grad():
             try:  # if model have full sort predict
                 input_inter.to(self.model.device)
-                scores = self.model.full_sort_predict(input_inter).cpu().reshape((users, -1))
+                scores = self.model.full_sort_predict(input_inter).cpu().reshape((len(users), -1))
 
             except NotImplementedError:  # if model do not have full sort predict --> context-aware
                 # get feature in the interactions
                 raise NotImplementedError
             
-            scores = scores.view(-1, self.dataset.item_num)
-        
-        # get the 10 items with highest scores
-        #rec_list = np.argsort(scores, axis = 1)[:, -10:]
-        topk_score, topk_iid_list  = torch.topk(scores, 10)
+            if self.config_dict['model'] != 'uCF' and self.config_dict['model'] !='iCF':
+                scores = scores.view(-1, self.dataset.item_num)
+                # get the 10 items with highest scores
+                #rec_list = np.argsort(scores, axis = 1)[:, -10:]
+                topk_score, topk_iid_list  = torch.topk(scores, 10)
 
-        return topk_iid_list.numpy().flatten().reshape(-1,10)
+                return topk_iid_list.numpy().flatten().reshape(-1,10)
+        
+        return scores
     
     
 

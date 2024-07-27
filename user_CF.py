@@ -64,7 +64,7 @@ class uCF(Pop):
             return pred
 
         pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m, avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
-        return pred
+        return torch.tensor(pred)
     
 
     def evaluate(self, dataset):
@@ -74,7 +74,12 @@ class uCF(Pop):
 
         prediction = self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)
 
+        y = []
+        for u in users:
+            y.append(int(dataset.inter_feat[dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID][-1]))
 
+
+        # compute metrics and return a dict
         hit_sum = 0 
         prec_sum = 0
         rec_sum = 0
@@ -85,11 +90,6 @@ class uCF(Pop):
             prec_sum +=  intersection / len([y[0]])
             rec_sum += intersection / len(prediction[i,:])
 
-
-        # compute metrics and return a dict
-        y = []
-        for u in users:
-            y.append(int(dataset.inter_feat[dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID][-1]))
 
         results = {
             'hit@10': hit_sum/len(users),

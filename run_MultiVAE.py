@@ -41,7 +41,7 @@ if __name__ == '__main__':
             'dataset': DATASET,
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
-            'device_id': DEVICE_ID,
+            'gpu_id': DEVICE_ID,
             'learnign_rate': LEARNING_RATE,
         }
 
