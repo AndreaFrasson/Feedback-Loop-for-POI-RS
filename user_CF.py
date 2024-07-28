@@ -9,7 +9,8 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from scipy import sparse
-from sklearn.metrics.pairwise import euclidean_distances
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import normalize
 
 
 class uCF(Pop):
@@ -35,33 +36,39 @@ class uCF(Pop):
             m = sparse.csr_matrix(self.dataset.inter_matrix())
         else:
             m = sparse.csr_matrix(dataset.inter_matrix())
+        
+        m = normalize(m, norm = 'l1', copy = True)
 
         # average interactions for all users
-        avg_int = (m.sum(1) / m.astype(bool).sum(axis=1)).flatten()
-
-        sim_mat = euclidean_distances(m)
+        avg_int = np.array((m.sum(1) / m.astype(bool).sum(axis=1)).flatten())
+        sim_mat = squareform(pdist(m.todense(), 'cosine'))
+        sim_mat = np.nan_to_num(sim_mat, False)
 
         # neghbors for each user
-        N_u = 3
-        neighbors = np.argsort(sim_mat[:, 1:], 1)[:, -N_u:]
+        N_u = 12
+        neighbors = np.argsort(sim_mat, 1)[:, -N_u:]
 
         def get_pred_cf(user, m, avg_int,sim_mat, neighbors):
             user = int(user.item())
-            ne = neighbors[user-1]
+            j = np.where(m[user].toarray() == 0)[1]
+            ne = neighbors[user]
 
-            j = np.where(m[user-1].toarray() == 0)[1]
+            int_ne = m[:, j][ne]
 
+            # compute the weighted sum between sim(u_a, u_k)*(m_k,j - r_k), but only for the users who have rated an item
+            weighted_sum = int_ne.toarray().astype(bool) * np.array(m[:, j][ne].toarray() - avg_int.reshape(-1,1)[ne])
 
-            num = sim_mat[user-1,ne].reshape(-1,1) * np.array(m[:, j][ne].toarray() - avg_int.reshape(-1,1)[ne])
+            num = sim_mat[user,ne].reshape(-1,1) * weighted_sum
+            #num = sim_mat[user,ne].reshape(-1,1) * np.array(m[ne].toarray() - avg_int.reshape(-1,1)[ne])
 
             num = np.sum(num, axis = 0)
-            den = np.sum(sim_mat[user-1,ne])
+            den = np.dot(sim_mat[user,ne].reshape(1,-1), int_ne.toarray().astype(bool)) # sum, for each item, only the sim of the users that interacted with the item
 
-            scores = num/den
+            scores = avg_int.reshape(-1,1)[user] + (num/den)
+            scores = np.nan_to_num(scores, False).flatten()
+
             pos = np.argsort(scores)[-10:]
-            pred = j[pos]
-
-            return pred
+            return j[pos]
 
         pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m, avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
         return torch.tensor(pred)
@@ -69,8 +76,6 @@ class uCF(Pop):
 
     def evaluate(self, dataset):
         users = torch.unique(dataset.inter_feat[self.USER_ID])
-
-        k = 10 # number of prediction
 
         prediction = self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)
 
