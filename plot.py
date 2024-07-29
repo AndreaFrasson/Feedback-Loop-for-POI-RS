@@ -3,38 +3,22 @@ import numpy as np
 import json
 
 
-MODEL = 'uCF_ip'
+MODEL = 'uCF_cp'
 STEP = 10
 MAXIT = 10
 P = 0.3
 
-def make_plot(x, y, title, ylab = '', vl = 0, x2 = None):
+
+def make_scatter(array, title, ylab = ''):
+
+    means = np.mean(array, axis = 0)
+    errors = np.std(array, axis = 0)
+    x = range(MAXIT)
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
-    ax.plot(x, y, color = 'blue', linestyle = 'dashed')
-    ax.set_xticks(range(len(x)))
-
-    ax.xaxis.set_major_locator(plt.MaxNLocator(3))
-
-    ax.set_xlabel('Epochs', size = 20)
-
-    ax.set_ylabel(ylab, size = 20)
-    ax.tick_params(axis='both', which='major', labelsize=20)
-
-    #ax.set_xscale('log')
-    #ax.set_yscale('log')
-    fig.tight_layout()
-    fig.savefig('plot/'+ title +'_'+MODEL+'_'+str(STEP)+'-'+str(MAXIT)+'_'+str(P)+'.png')
-
-    return 
-
-def make_scatter(x, mean, title, ylab = '', vl = 0, x2 = None):
-
-    fig, ax = plt.subplots(figsize=(8, 8))
-
-    ax.plot(x, mean, marker='o')
-    ax.set_xticks(range(len(x)))
+    ax.errorbar(x, means, errors, marker='o')
+    ax.set_xticks(x)
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(3))
 
@@ -72,137 +56,98 @@ if __name__ == '__main__':
                 # Diversity of Items
                 title = 'Diversity of Items'
                 ylab = 'Nr. of Distinct Proposed Location'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'rog_ind':
                 # Diversity of Items
                 title = 'Total Radius Of Gyration'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = 'ROG[km]'
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(MAXIT, -1), title, ylab)
 
             case 'rog_ind_2':
                 # Diversity of Items
                 title = 'Total 2k Radius Of Gyration'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = '2-ROG[km]'
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'D_ind':
                 # Diversity of Items
                 title = 'Distinct Location Visited'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = 'Nr. of Distinct Location Visited by each user'
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'L_old_ind':
                 # Diversity of Items
                 title = 'Old Location Suggested'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = 'Nr. of Distinct Old Location '
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'L_new_ind':
                 # Diversity of Items
                 title = 'New Location Suggested'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = 'Nr. of Distinct new Location '
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'S_ind':
                 # Diversity of Items
                 title = 'Individual Entropy'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = ''
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'S_col':
                 # Diversity of Items
                 title = 'Collective Entropy'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = ''
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'Expl_ind':
                 # Diversity of Items
                 title = 'Exploring Events'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = ' '
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'Ret_ind':
                 # Diversity of Items
                 title = 'Returning Events'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'Gini_ind':
                 # Diversity of Items
                 title = 'Individual Gini'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
-                vl = STEP
                 ylab = ''
 
-                make_scatter(x, means, title, ylab, vl)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'test_hit':
                # hit rate
                 title = 'Hit Rate'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
                 ylab = ''
 
-                make_plot(x, means, title, ylab)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'test_precision':
                 # hit rate
                 title = 'Precision'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
                 ylab = ''
 
-                make_plot(x, means, title, ylab)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'test_rec':
                 # Diversity of Items
                 title = 'Recall'
-                means = np.mean(np.array(js[k]).reshape(-1, MAXIT), axis = 0).reshape(MAXIT,)
-                x = [i for i in range(MAXIT)]
                 ylab = ''
 
-                make_plot(x, means, title, ylab)
+                make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case _:
                 print('metric not implemented')
