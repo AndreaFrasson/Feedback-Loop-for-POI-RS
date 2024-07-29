@@ -14,6 +14,8 @@ from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
 from ind_Pop import ind_Pop
 from user_CF import uCF
+from item_CF import iCF
+
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -93,6 +95,10 @@ class FeedBack_Loop():
                 
                 elif self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset).to(self.config['device'])
+                    results = self.model.evaluate(self.test_set._dataset)
+
+                elif self.config_dict['model'] == 'iCF':
+                    self.model = iCF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
@@ -320,6 +326,8 @@ class FeedBack_Loop():
 
 
     def compute_metrics(self, recommended_items):
+
+        
 
         # distinct items proposed (collective)
         self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # -1 is padding value, not considered

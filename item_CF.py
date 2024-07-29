@@ -32,6 +32,8 @@ class iCF(Pop):
     def full_sort_predict(self, interaction, dataset = None):
 
         users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
+        items = np.array(list(self.dataset.item_counter.keys())).reshape(-1,1)
+
         if dataset is None:
             m = sparse.csr_matrix(self.dataset.inter_matrix().T)
         else:
@@ -50,26 +52,23 @@ class iCF(Pop):
         N_u = 7
         neighbors = np.argsort(sim_mat, 1)[:, -N_u:]
 
-        def get_pred_cf(user, m, avg_int,sim_mat, neighbors):
-            user = int(user.item())
-            j = np.where(m[user] == 0)[0]
-            ne = neighbors[user]
+        def get_pred_cf(item, m, avg_int,sim_mat, neighbors):
+            item = int(item.item())
 
-            # compute the weighted sum between sim(u_a, u_k)*(m_k,j - r_k), but only for the users who have rated an item
-            ws = (m[ne] - np.nan_to_num(avg_int.reshape(-1,1))[ne])
-            #[:, j]
+            ws = m[neighbors[item]] - avg_int.reshape(-1,1)[neighbors[item]]
 
-            num = np.sum(sim_mat[user][ne].reshape(-1,1) * ws, 0)
-            den = sum(sim_mat[user][ne])
+            num = np.sum(sim_mat[item,neighbors[item]].reshape(-1,1) * ws, 0)
+            den = np.sum(sim_mat[item,neighbors[item]])
 
-            scores = avg_int.reshape(-1,1)[user] + (num/den)
-            np.nan_to_num(scores, 0)
+            scores_item = avg_int.reshape(-1,1)[item] + (num/den)
 
-            pos = np.argsort(scores)[-10:]# return the item not visited with highest scores
-            return pos
+            return scores_item
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
-        return torch.tensor(pred)
+
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = items, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
+        pred = pred.T
+        pred = np.nan_to_num(pred, 0)
+        return torch.tensor(np.argsort(pred, 1)[users.flatten(), -10:] + 1)
     
 
     def evaluate(self, dataset):

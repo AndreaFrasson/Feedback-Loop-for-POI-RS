@@ -37,7 +37,7 @@ class uCF(Pop):
         else:
             m = sparse.csr_matrix(dataset.inter_matrix())
 
-        m = (m / m.sum(1)).toarray() # normalize row by total interactions
+        m = (m / m.sum(1)) # normalize row by total interactions
 
         # average interactions for all users
         avg_int = np.array((m.sum(1) / m.astype(bool).sum(axis=1)).flatten())
@@ -52,11 +52,11 @@ class uCF(Pop):
 
         def get_pred_cf(user, m, avg_int,sim_mat, neighbors):
             user = int(user.item())
-            j = np.where(m[user] == 0)[0]
+            #j = np.where(m[user] == 0)[0]
             ne = neighbors[user]
 
             # compute the weighted sum between sim(u_a, u_k)*(m_k,j - r_k), but only for the users who have rated an item
-            ws = (m[ne] - np.nan_to_num(avg_int.reshape(-1,1))[ne])
+            ws = (m.toarray()[ne] - np.nan_to_num(avg_int.reshape(-1,1))[ne])
             #[:, j]
 
             num = np.sum(sim_mat[user][ne].reshape(-1,1) * ws, 0)
