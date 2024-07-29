@@ -4,19 +4,24 @@ import numpy as np
 from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
+from recbole.data import Interaction
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
+from scipy import sparse
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import normalize
 
-class uCF(Pop):
-    """Random is an fundamental model that recommends random items."""
+
+class iCF(Pop):
+    """Random is an fundamental self that recommends random items."""
 
     input_type = InputType.POINTWISE
     type = ModelType.TRADITIONAL
 
     def __init__(self, config, dataset):
         self.dataset = dataset
-        super(uCF, self).__init__(config, dataset)
+        super(iCF, self).__init__(config, dataset)
         
 
 
@@ -26,73 +31,68 @@ class uCF(Pop):
 
     def full_sort_predict(self, interaction, dataset = None):
 
-        users = torch.unique(interaction[self.USER_ID])
-
-        #similarity between users
+        users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
         if dataset is None:
-            m = self.dataset.inter_matrix().toarray()[users]
+            m = sparse.csr_matrix(self.dataset.inter_matrix().T)
         else:
-            m = dataset.inter_matrix().toarray()[users]
+            m = sparse.csr_matrix(dataset.inter_matrix().T)
 
-        sim_mat = squareform(pdist(m, metric='cosine'))
-        np.fill_diagonal(sim_mat, 0)
-
-        def __len_flatnonzero(a):
-            return len(np.flatnonzero(a))
+        m = (m / m.sum(1)) # normalize row by total interactions
 
         # average interactions for all users
-        avg_int = np.sum(m, axis = 1) / np.apply_along_axis(__len_flatnonzero, 1, m)
+        avg_int = np.array((m.sum(1) / m.astype(bool).sum(axis=1)).flatten())
+        np.nan_to_num(avg_int, 0)
+
+        sim_mat = cosine_similarity(m)
+        np.fill_diagonal(sim_mat, 0)
 
         # neghbors for each user
-        N_u = 3
-        neighbors = np.argsort(sim_mat)[:, -N_u:]
+        N_u = 7
+        neighbors = np.argsort(sim_mat, 1)[:, -N_u:]
 
+        def get_pred_cf(user, m, avg_int,sim_mat, neighbors):
+            user = int(user.item())
+            j = np.where(m[user] == 0)[0]
+            ne = neighbors[user]
 
-        def get_pred_cf(u, m, avg_int,sim_mat, neighbors):
-            u = int(u.item())
-            ne = neighbors[u-1]
+            # compute the weighted sum between sim(u_a, u_k)*(m_k,j - r_k), but only for the users who have rated an item
+            ws = (m[ne] - np.nan_to_num(avg_int.reshape(-1,1))[ne])
+            #[:, j]
 
-            j = np.where(m[u-1] == 0)[0][1:]
+            num = np.sum(sim_mat[user][ne].reshape(-1,1) * ws, 0)
+            den = sum(sim_mat[user][ne])
 
-            num = np.sum(sim_mat[u-1,ne].reshape(-1,1) * (m[:, j][ne] - avg_int[ne].reshape(-1,1)), axis = 0)
-            den = np.sum(sim_mat[u-1,ne])
+            scores = avg_int.reshape(-1,1)[user] + (num/den)
+            np.nan_to_num(scores, 0)
 
-            scores = num/den
-            pos = np.argsort(scores)[-10:]
-            pred = j[pos]
+            pos = np.argsort(scores)[-10:]# return the item not visited with highest scores
+            return pos
 
-            return pred
-
-
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m, avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
-
-        return pred
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
+        return torch.tensor(pred)
     
 
-    def evaluate(self, test_interaction, dataset):
-        users = torch.unique(test_interaction[self.USER_ID])
+    def evaluate(self, dataset):
+        users = torch.unique(dataset.inter_feat[self.USER_ID])
 
-        k = 10 # number of prediction
-        results = torch.tensor([]).to(self.device)
-        
-        for i in range(k):
-            results = torch.cat([results, self.full_sort_predict(test_interaction, dataset)], dim = 1)
-        
-        # compute metrics and return a dict
+        prediction = self.full_sort_predict(Interaction({self.USER_ID: users}), dataset)
+
         y = []
         for u in users:
-            y.append(int(test_interaction[test_interaction[self.USER_ID] == u][self.ITEM_ID][-1]))
-        
-        
+            y.append(int(dataset.inter_feat[dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID][-1]))
+
+
+        # compute metrics and return a dict
         hit_sum = 0 
         prec_sum = 0
         rec_sum = 0
 
         for i in range(len(y)):
-            hit_sum += int(y[i] in results[i,:])
-            intersection = len(set(results[i,:].numpy()).intersection(set([y[i]])))
+            hit_sum += int(y[i] in prediction[i,:])
+            intersection = len(set(prediction[i,:]).intersection(set([y[i]])))
             prec_sum +=  intersection / len([y[0]])
-            rec_sum += intersection / len(results[i,:])
+            rec_sum += intersection / len(prediction[i,:])
+
 
         results = {
             'hit@10': hit_sum/len(users),
