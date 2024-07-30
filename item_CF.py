@@ -48,9 +48,11 @@ class iCF(Pop):
         sim_mat = cosine_similarity(m)
         np.fill_diagonal(sim_mat, 0)
 
-        # neghbors for each user
+        sim_mat = torch.Tensor(sim_mat).to(self.device)
+
+        # neighbors for each user
         N_u = 7
-        neighbors = np.argsort(sim_mat, 1)[:, -N_u:]
+        neighbors = torch.argsort(sim_mat, 1)[:, -N_u:].tonumpy()
 
         def get_pred_cf(item, m, avg_int,sim_mat, neighbors):
             item = int(item.item())
