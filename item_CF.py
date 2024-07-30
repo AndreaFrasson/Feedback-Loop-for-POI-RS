@@ -52,7 +52,7 @@ class iCF(Pop):
 
         # neighbors for each user
         N_u = 7
-        neighbors = torch.argsort(sim_mat, 1)[:, -N_u:].tonumpy()
+        neighbors = torch.argsort(sim_mat, 1)[:, -N_u:].numpy()
 
         def get_pred_cf(item, m, avg_int,sim_mat, neighbors):
             item = int(item.item())
@@ -67,7 +67,7 @@ class iCF(Pop):
             return scores_item
 
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = items, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = items, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat.numpy(), neighbors = neighbors)
         pred = pred.T
         pred = np.nan_to_num(pred, 0)
         return torch.tensor(np.argsort(pred, 1)[users.flatten(), -10:] + 1)
