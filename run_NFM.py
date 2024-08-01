@@ -1,11 +1,11 @@
-from preprocess import preprocess
+from preprocess_sequential import preprocess
 import os
 import sys
 from Feedback_Loop import FeedBack_Loop
 import json
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'MultiVAE'
+MODEL = 'NFM'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     results = {}
     
-    for i in range(10):
+    for i in range(1):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
@@ -58,5 +58,5 @@ if __name__ == '__main__':
 
 
     # save output
-    with open('output/MultiVAE_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
+    with open('output/NFM_'+not_rec+'_'+str(len_step)+'-'+str(epochs)+'_'+str(k)+'.txt','w') as data:  
         json.dump(results, data)
