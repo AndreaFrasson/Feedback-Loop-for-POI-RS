@@ -1,5 +1,5 @@
 model: MultiVAE
 
-learning_rate loguniform -8,-1
+learning_rate loguniform -8,-3
 latent_dimension: 32
 mlp_hidden_size: 50

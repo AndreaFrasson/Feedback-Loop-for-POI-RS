@@ -50,7 +50,7 @@ if __name__ == '__main__':
     
     for i in range(10):
         fl = FeedBack_Loop(config_dict, not_rec)
-        fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
+        fl.loop(epochs, len_step, k = k, user_frac=0, tuning=True, hyper_file = 'MultiVAE.hyper')
 
         for i in fl.metrics.keys():
             results[i] = results.get(i, []) + [fl.metrics[i]]
