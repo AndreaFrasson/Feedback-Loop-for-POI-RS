@@ -9,7 +9,7 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from scipy import sparse
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import pairwise_distances
 from sklearn.preprocessing import normalize
 
 
@@ -19,9 +19,10 @@ class uCF(Pop):
     input_type = InputType.POINTWISE
     type = ModelType.TRADITIONAL
 
-    def __init__(self, config, dataset):
+    def __init__(self, config, dataset, N_u = 17):
         self.dataset = dataset
         super(uCF, self).__init__(config, dataset)
+        self.N_u = N_u
         
 
 
@@ -31,28 +32,33 @@ class uCF(Pop):
 
     def full_sort_predict(self, interaction, dataset = None):
 
-        users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
-        if dataset is None:
-            m = sparse.csr_matrix(self.dataset.inter_matrix())
-        else:
-            m = sparse.csr_matrix(dataset.inter_matrix())
+        train_users = torch.unique(self.dataset.inter_feat[self.USER_ID]).reshape(-1,1)
+        m_train = sparse.csr_matrix(self.dataset.inter_matrix())[[0]+list(train_users.flatten())]
 
-        m = (m / m.sum(1)) # normalize row by total interactions
+        inter_users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
+
+        if dataset is not None:
+            m_inter = sparse.csr_matrix(dataset.inter_matrix())[inter_users.flatten()]
+        else:
+            m_inter = sparse.csr_matrix(self.dataset.inter_matrix())[list(inter_users.flatten())]
+
 
         # average interactions for all users
-        avg_int = np.array((m.sum(1) / m.astype(bool).sum(axis=1)).flatten())
-        np.nan_to_num(avg_int, 0)
+        avg_int_train = np.array((m_train.sum(1) / m_train.astype(bool).sum(axis=1)).flatten())
+        avg_int_inter = np.array((m_inter.sum(1) / m_inter.astype(bool).sum(axis=1)).flatten())
 
-        sim_mat = cosine_similarity(m)
-        np.fill_diagonal(sim_mat, 0)
+        avg_int_train = np.nan_to_num(avg_int_train, 0)
+        avg_int_inter = np.nan_to_num(avg_int_inter, 0)
 
-        # neghbors for each user
-        N_u = 7
-        neighbors = np.argsort(sim_mat, 1)[:, -N_u:]
+        sim_mat = 1 - pairwise_distances(m_inter, m_train, 'cosine')
+        sim_mat = np.nan_to_num(sim_mat, 0)
 
-        def get_pred_cf(user, m, avg_int,sim_mat, neighbors):
-            user = int(user.item())
-            #j = np.where(m[user] == 0)[0]
+        #sim_mat = torch.Tensor(sim_mat).to(self.device)
+
+        neighbors = np.argsort(sim_mat, 1)[:, -self.N_u:]
+
+        def get_pred_cf(arr, m, avg_int, sim_mat, neighbors):
+            user = int(arr.item())
             ne = neighbors[user]
 
             # compute the weighted sum between sim(u_a, u_k)*(m_k,j - r_k), but only for the users who have rated an item
@@ -60,7 +66,7 @@ class uCF(Pop):
             #[:, j]
 
             num = np.sum(sim_mat[user][ne].reshape(-1,1) * ws, 0)
-            den = sum(sim_mat[user][ne])
+            den = sum(np.abs(sim_mat[user][ne]))
 
             scores = avg_int.reshape(-1,1)[user] + (num/den)
             np.nan_to_num(scores, 0)
@@ -68,7 +74,8 @@ class uCF(Pop):
             pos = np.argsort(scores)[-10:]# return the item not visited with highest scores
             return pos
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = users, m = m, avg_int = avg_int, sim_mat = sim_mat, neighbors = neighbors)
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1),
+                                    m = m_train, avg_int = avg_int_train, sim_mat = sim_mat, neighbors = neighbors)
         return torch.tensor(pred)
     
 

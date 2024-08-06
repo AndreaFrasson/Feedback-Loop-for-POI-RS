@@ -51,7 +51,7 @@ class iCF(Pop):
         sim_mat = torch.Tensor(sim_mat).to(self.device)
 
         # neighbors for each user
-        N_u = 7
+        N_u = 17
         neighbors = torch.argsort(sim_mat, 1)[:, -N_u:].numpy()
 
         def get_pred_cf(item, m, avg_int,sim_mat, neighbors):
@@ -60,7 +60,7 @@ class iCF(Pop):
             ws = m[neighbors[item]] - avg_int.reshape(-1,1)[neighbors[item]]
 
             num = np.sum(sim_mat[item,neighbors[item]].reshape(-1,1) * ws, 0)
-            den = np.sum(sim_mat[item,neighbors[item]])
+            den = np.sum(np.abs(sim_mat[item,neighbors[item]]))
 
             scores_item = avg_int.reshape(-1,1)[item] + (num/den)
 

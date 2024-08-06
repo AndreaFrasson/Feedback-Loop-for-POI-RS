@@ -96,9 +96,11 @@ class FeedBack_Loop():
                 elif self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
+                    print(np.sum(self.training_set._dataset.inter_matrix().toarray()))
+                    print(np.sum(self.test_set._dataset.inter_matrix().toarray()))
 
                 elif self.config_dict['model'] == 'iCF':
-                    self.model = iCF(self.config, self.dataset).to(self.config['device'])
+                    self.model = iCF(self.config, self.training_set.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
@@ -176,14 +178,14 @@ class FeedBack_Loop():
     # @return only the 10 best items, INTERNAL EMBEDDING, predicted for each user
     def __prediction(self):
 
-        users = list(self.training_set._dataset.user_counter.keys())
+        users = torch.unique(self.training_set._dataset.inter_feat[self.uid_field])
 
 
         # get the score of every item
         input_inter = Interaction({
             'uid': torch.tensor(users)
         })
-        input_inter = self.dataset.join(input_inter)  # join user feature
+        #input_inter = self.dataset.join(input_inter)  # join user feature
     
 
         with torch.no_grad():

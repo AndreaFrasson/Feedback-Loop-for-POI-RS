@@ -3,10 +3,10 @@ import numpy as np
 import json
 
 
-MODEL = 'uCF_cp'
+MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
-P = 0.3
+P = 0.8
 
 
 def make_scatter(array, title, ylab = ''):
@@ -17,7 +17,7 @@ def make_scatter(array, title, ylab = ''):
 
     fig, ax = plt.subplots(figsize=(8, 8))
 
-    ax.errorbar(x, means, errors, marker='o')
+    ax.errorbar(x, means, errors, marker='o', color = 'black', linewidth = 3, elinewidth = 1, capsize=5)
     ax.set_xticks(x)
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(3))
@@ -33,6 +33,9 @@ def make_scatter(array, title, ylab = ''):
     except:
         bo = bo
     ax.set_ylim(max(0, bo), up +np.absolute(np.log10(up)))
+
+    plt.grid(color = 'grey', alpha = 0.2, linewidth = 2)  #just add this
+
     #ax.set_xscale('log')
     #ax.set_yscale('log')
     fig.tight_layout()
