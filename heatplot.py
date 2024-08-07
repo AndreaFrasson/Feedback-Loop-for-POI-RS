@@ -6,7 +6,7 @@ import json
 MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
-P = [0.3, 0.8]
+P = [0.3, 0.5, 0.8]
 
 
 def show_values(pc, fmt="%.2f", **kw):
@@ -83,7 +83,7 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels):
 
     # resize 
     fig = plt.gcf()
-    fig.set_size_inches(cm2inch(40, 20))
+    fig.set_size_inches(cm2inch(50, 13))
 
 
 

@@ -6,11 +6,9 @@ from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
 from recbole.data import Interaction
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
 
 from scipy import sparse
-from sklearn.metrics.pairwise import pairwise_distances
-from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import cosine_similarity
 
 
 class uCF(Pop):
@@ -50,7 +48,7 @@ class uCF(Pop):
         avg_int_train = np.nan_to_num(avg_int_train, 0)
         avg_int_inter = np.nan_to_num(avg_int_inter, 0)
 
-        sim_mat = 1 - pairwise_distances(m_inter, m_train, 'cosine')
+        sim_mat = cosine_similarity(m_inter, m_train, 'cosine')
         sim_mat = np.nan_to_num(sim_mat, 0)
 
         #sim_mat = torch.Tensor(sim_mat).to(self.device)

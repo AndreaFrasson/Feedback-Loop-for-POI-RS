@@ -6,11 +6,9 @@ from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
 from recbole.data import Interaction
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
 
 from scipy import sparse
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.preprocessing import normalize
+from sklearn.metrics.pairwise import pairwise_distances
 
 
 class iCF(Pop):
@@ -19,9 +17,10 @@ class iCF(Pop):
     input_type = InputType.POINTWISE
     type = ModelType.TRADITIONAL
 
-    def __init__(self, config, dataset):
+    def __init__(self, config, dataset, N_u = 17):
         self.dataset = dataset
         super(iCF, self).__init__(config, dataset)
+        self.N_u = N_u
         
 
 
@@ -31,43 +30,57 @@ class iCF(Pop):
 
     def full_sort_predict(self, interaction, dataset = None):
 
-        users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
+        train_users = torch.unique(self.dataset.inter_feat[self.USER_ID]).reshape(-1,1)
+        m_train = sparse.csr_matrix(self.dataset.inter_matrix().T)
+
         items = np.array(list(self.dataset.item_counter.keys())).reshape(-1,1)
 
-        if dataset is None:
-            m = sparse.csr_matrix(self.dataset.inter_matrix().T)
+        inter_users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
+
+        if dataset is not None:
+            m_inter = sparse.csr_matrix(dataset.inter_matrix().T)
         else:
-            m = sparse.csr_matrix(dataset.inter_matrix().T)
+            m_inter = sparse.csr_matrix(self.dataset.inter_matrix().T)
 
-        m = (m / m.sum(1)) # normalize row by total interactions
+        users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
 
-        # average interactions for all users
-        avg_int = np.array((m.sum(1) / m.astype(bool).sum(axis=1)).flatten())
-        np.nan_to_num(avg_int, 0)
+        #m = (m / m.sum(1)) # normalize row by total interactions
 
-        sim_mat = cosine_similarity(m)
-        np.fill_diagonal(sim_mat, 0)
+        # average interactions for all items
+        avg_int_train = np.array((m_train.sum(1) / m_train.astype(bool).sum(axis=1)).flatten())
+        avg_int_inter = np.array((m_inter.sum(1) / m_inter.astype(bool).sum(axis=1)).flatten())
 
-        sim_mat = torch.Tensor(sim_mat).to(self.device)
+        avg_int_train = np.nan_to_num(avg_int_train, 0)
+        avg_int_inter = np.nan_to_num(avg_int_inter, 0)
 
-        # neighbors for each user
-        N_u = 17
-        neighbors = torch.argsort(sim_mat, 1)[:, -N_u:].numpy()
+        # similarity matrix between each item in the test with each item in the train
+        sim_mat = 1 - pairwise_distances(m_inter, m_train, 'cosine')
+        sim_mat = np.nan_to_num(sim_mat, 0)
 
-        def get_pred_cf(item, m, avg_int,sim_mat, neighbors):
-            item = int(item.item())
+        #sim_mat = torch.Tensor(sim_mat).to(self.device)
 
-            ws = m[neighbors[item]] - avg_int.reshape(-1,1)[neighbors[item]]
+        # most similar items for item in the test set
+        neighbors = np.argsort(sim_mat, 1)[:, -self.N_u:]
 
-            num = np.sum(sim_mat[item,neighbors[item]].reshape(-1,1) * ws, 0)
-            den = np.sum(np.abs(sim_mat[item,neighbors[item]]))
+        def get_pred_cf(arr, m, avg_int,sim_mat, neighbors):
+            item = int(arr.item())
+            ne = neighbors[item]
 
-            scores_item = avg_int.reshape(-1,1)[item] + (num/den)
+            ws = m[ne] - avg_int.reshape(-1,1)[ne]
 
-            return scores_item
+            print(ws)
+
+            num = np.sum(sim_mat[item, ne] * ws, 0)
+            den = np.sum(np.abs(sim_mat[item,ne]))
+
+            scores = avg_int.reshape(-1,1)[item] + (num/den)
+            np.nan_to_num(scores, 0)
+
+            return scores
 
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = items, m = m.toarray(), avg_int = avg_int, sim_mat = sim_mat.numpy(), neighbors = neighbors)
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1), m = m_train, 
+                                   avg_int = avg_int_inter, sim_mat = sim_mat, neighbors = neighbors)
         pred = pred.T
         pred = np.nan_to_num(pred, 0)
         return torch.tensor(np.argsort(pred, 1)[users.flatten(), -10:] + 1)
