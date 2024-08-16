@@ -48,7 +48,7 @@ class uCF(Pop):
         avg_int_train = np.nan_to_num(avg_int_train, 0)
         avg_int_inter = np.nan_to_num(avg_int_inter, 0)
 
-        sim_mat = cosine_similarity(m_inter, m_train, 'cosine')
+        sim_mat = cosine_similarity(m_inter, m_train)
         sim_mat = np.nan_to_num(sim_mat, 0)
 
         #sim_mat = torch.Tensor(sim_mat).to(self.device)

@@ -96,8 +96,6 @@ class FeedBack_Loop():
                 elif self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
-                    print(np.sum(self.training_set._dataset.inter_matrix().toarray()))
-                    print(np.sum(self.test_set._dataset.inter_matrix().toarray()))
 
                 elif self.config_dict['model'] == 'iCF':
                     self.model = iCF(self.config, self.training_set.dataset).to(self.config['device'])
