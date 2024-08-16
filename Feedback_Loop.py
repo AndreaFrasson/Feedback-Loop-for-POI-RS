@@ -141,7 +141,7 @@ class FeedBack_Loop():
             chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active, k)
                 
             if c % self.len_step == 0:
-                self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
+                self.compute_metrics(chosen_items) # compute metrics before the effect of the new model
 
             self.update_incremental(chosen_items)
 
@@ -326,8 +326,6 @@ class FeedBack_Loop():
 
 
     def compute_metrics(self, recommended_items):
-
-        
 
         # distinct items proposed (collective)
         self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # -1 is padding value, not considered
