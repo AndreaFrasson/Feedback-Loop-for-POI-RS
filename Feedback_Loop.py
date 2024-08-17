@@ -210,20 +210,12 @@ class FeedBack_Loop():
     def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active, k = 0.3):
         # percentuale utenti che non seguono il recommender
 
-        users = set(self.training_set._dataset.user_counter.keys())
-
-        if rows_not_active is not None:
-            active_users = users - set(rows_not_active)
-        else:
-            active_users = users
-
-        not_active_users = np.random.choice(list(active_users), int(len(active_users) * k))
-        not_active_rows = not_active_users - 1
-
         choices = np.apply_along_axis(np.random.choice, 1, recommender_pred, size = 1).flatten()
-        #random_item_history = [int(np.random.choice(x, 1,)) for x in not_recommender_pred]
 
-        np.array(choices)[not_active_rows] = not_recommender_pred[not_active_rows]
+        for i in range(len(choices)):
+            if choices[i] >= 0:
+                if np.random.binomial(1, k) > 0.5:
+                    choices[i] = not_recommender_pred[i]
 
         return choices
 
@@ -328,7 +320,7 @@ class FeedBack_Loop():
     def compute_metrics(self, recommended_items):
 
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # -1 is padding value, not considered
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # 0 is padding value, not considered
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']
