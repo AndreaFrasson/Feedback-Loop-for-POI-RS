@@ -195,7 +195,7 @@ class FeedBack_Loop():
                 # get feature in the interactions
                 raise NotImplementedError
             
-            if self.config_dict['model'] != 'uCF' and self.config_dict['model'] !='iCF':
+            if self.config_dict['model'] not in  ['uCF', 'iCF', 'ind_Pop']:
                 scores = scores.view(-1, self.dataset.item_num)
                 # get the 10 items with highest scores
                 #rec_list = np.argsort(scores, axis = 1)[:, -10:]
@@ -320,7 +320,7 @@ class FeedBack_Loop():
     def compute_metrics(self, recommended_items):
 
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # 0 is padding value, not considered
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten().numpy())) -1] # 0 is padding value, not considered
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']

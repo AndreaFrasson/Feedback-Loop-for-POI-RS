@@ -4,6 +4,7 @@ import numpy as np
 from recbole.model.abstract_recommender import GeneralRecommender
 from recbole.utils import InputType, ModelType
 from recbole.model.general_recommender import Pop
+from recbole.data import Interaction
 
 class ind_Pop(Pop):
     """Random is an fundamental model that recommends random items."""
@@ -31,19 +32,18 @@ class ind_Pop(Pop):
         return torch.tensor(pop_results).reshape((-1, 10))
     
 
-    def evaluate(self, test_interaction, dataset):
-        users = torch.unique(test_interaction[self.USER_ID])
+    def evaluate(self, dataset):
+        users = torch.unique(dataset.inter_feat[self.USER_ID]).reshape(-1,1)
 
         k = 10 # number of prediction
         results = torch.tensor([]).to(self.device)
         
-        for i in range(k):
-            results = torch.cat([results, self.full_sort_predict(test_interaction, dataset)], dim = 1)
+        results = torch.cat([results, self.full_sort_predict(Interaction({self.USER_ID: users}))], dim = 1)
         
         # compute metrics and return a dict
         y = []
         for u in users:
-            y.append(int(test_interaction[test_interaction[self.USER_ID] == u][self.ITEM_ID][-1]))
+            y.append(int(dataset.inter_feat[dataset.inter_feat[self.USER_ID] == u][self.ITEM_ID][-1]))
         
         
         hit_sum = 0 
@@ -52,7 +52,7 @@ class ind_Pop(Pop):
 
         for i in range(len(y)):
             hit_sum += int(y[i] in results[i,:])
-            intersection = len(set(results[i,:].numpy()).intersection(set([y[i]])))
+            intersection = len(set(results[i,:]).intersection(set([y[i]])))
             prec_sum +=  intersection / len([y[0]])
             rec_sum += intersection / len(results[i,:])
 
