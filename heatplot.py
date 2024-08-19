@@ -6,7 +6,7 @@ import json
 MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
-P = [0.3, 0.5, 0.8]
+P = [0.5, 0.2]
 
 
 def show_values(pc, fmt="%.2f", **kw):
@@ -83,7 +83,7 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels):
 
     # resize 
     fig = plt.gcf()
-    fig.set_size_inches(cm2inch(50, 13))
+    fig.set_size_inches(cm2inch(90, 7))
 
 
 
@@ -112,9 +112,9 @@ def main():
 
     #title = "Title"
     xlabel= "Epochs"
-    ylabel="Reject Prob"
+    ylabel="Acceptance Prob"
     xticklabels = range(1, x_axis_size+1) # could be text
-    yticklabels = P # could be text   
+    yticklabels = 1-np.array(P) # could be text   
     heatmap(means, '', xlabel, ylabel, xticklabels, yticklabels)
     #plt.savefig('image_output.png', dpi=300, format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
     plt.show()

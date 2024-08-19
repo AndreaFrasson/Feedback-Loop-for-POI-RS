@@ -6,13 +6,13 @@ import json
 MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
-P = 0.8
+P = 0.2
 
 
 def make_scatter(array, title, ylab = ''):
 
     means = np.mean(array, axis = 0)
-    errors = np.std(array, axis = 0)
+    errors = np.std(array, axis = 0) / 2
     x = range(MAXIT)
 
     fig, ax = plt.subplots(figsize=(8, 8))
