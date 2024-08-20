@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import json
 
 
-MODEL = 'MultiVAE_cp'
+MODEL = 'col_Pop_ip'
 STEP = 10
 MAXIT = 10
-P = [0.5, 0.2]
+P = [1.0, 0.8, 0.5, 0.2, 0.0]
 
 
 def show_values(pc, fmt="%.2f", **kw):
@@ -114,7 +114,7 @@ def main():
     xlabel= "Epochs"
     ylabel="Acceptance Prob"
     xticklabels = range(1, x_axis_size+1) # could be text
-    yticklabels = 1-np.array(P) # could be text   
+    yticklabels = ['0', '0.2', '0.5', '0.8', '1'] # could be text   
     heatmap(means, '', xlabel, ylabel, xticklabels, yticklabels)
     #plt.savefig('image_output.png', dpi=300, format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
     plt.show()
