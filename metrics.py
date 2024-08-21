@@ -97,8 +97,9 @@ def compute_rog(interactions, k = None):
 def old_items_suggested(recommended_items, dataset, uid_field, iid_field):
 
     old_items = []
-    for u,g in pd.DataFrame(dataset.inter_feat.numpy()).groupby(uid_field):
-        old_items.append(sum(el in recommended_items[u-1] for el in set(g[iid_field].values)))
+    for u, hist in pd.DataFrame(dataset.inter_feat.numpy()).groupby('uid')['item_id']:
+        if sum(recommended_items[u-1]) > 0:
+            old_items.append(sum(el in recommended_items[u-1] for el in set(hist.values)))
 
     return old_items
 

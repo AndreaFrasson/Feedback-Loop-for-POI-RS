@@ -320,7 +320,7 @@ class FeedBack_Loop():
     def compute_metrics(self, recommended_items):
 
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) -1] # 0 is padding value, not considered
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) - 1] # -1 is padding value, not considered
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']
@@ -338,7 +338,7 @@ class FeedBack_Loop():
         self.metrics['L_old_ind'] = self.metrics.get('L_old_ind', []) + [np.mean(old)]
         
         # new items suggested (individual)
-        new = metrics.old_items_suggested(recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)
+        new = metrics.new_items_suggested(recommended_items, self.training_set._dataset, self.uid_field, self.iid_field)
         self.metrics['L_new_ind'] = self.metrics.get('L_new_ind', []) + [np.mean(new)]
         # mean entropy (individual)
         entropy = metrics.uncorrelated_entropy(pd.DataFrame(self.training_set._dataset.inter_feat.cpu().numpy()), self.uid_field, self.iid_field)
