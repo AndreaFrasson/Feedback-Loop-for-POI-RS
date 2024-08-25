@@ -8,7 +8,7 @@ import numpy as np
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'MultiVAE'
+MODEL = 'ind_Pop'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     results = {}
     
     fl = FeedBack_Loop(config_dict, not_rec)
-    fl.loop(epochs, len_step, k = k, user_frac=0, tuning=True, hyper_file = 'MultiVAE.hyper')
+    fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False, hyper_file = 'MultiVAE.hyper')
 
     df = pd.DataFrame(fl.training_set._dataset.inter_feat.numpy())
 
     # save output
-    df.to_csv('dataframe/multivae_dataframe.csv', index = False)
+    df.to_csv('dataframe/ind_Pop_dataframe.csv', index = False)

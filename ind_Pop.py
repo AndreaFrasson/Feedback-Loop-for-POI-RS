@@ -36,7 +36,8 @@ class ind_Pop(Pop):
         users = torch.unique(dataset.inter_feat[self.USER_ID]).reshape(-1,1)
 
         k = 10 # number of prediction
-        results = torch.tensor([]).to(self.device)
+        results = torch.tensor([])
+        #.to(self.device)
         
         results = torch.cat([results, self.full_sort_predict(Interaction({self.USER_ID: users}))], dim = 1)
         
