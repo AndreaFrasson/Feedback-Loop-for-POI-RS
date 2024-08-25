@@ -5,3 +5,4 @@ saved/*
 cache/*
 __pycache__/*
 plot/*
+poster/*

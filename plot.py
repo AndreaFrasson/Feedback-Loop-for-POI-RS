@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 make_scatter(np.array(js[k]).reshape(-1, MAXIT), title, ylab)
 
             case 'rog_ind':
-                # Diversity of Items
+                # ROG
                 title = 'Total Radius Of Gyration'
                 ylab = 'ROG[km]'
 
