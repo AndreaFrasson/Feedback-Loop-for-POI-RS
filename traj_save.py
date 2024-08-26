@@ -8,7 +8,7 @@ import numpy as np
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'ind_Pop'
+MODEL = 'uCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -57,4 +57,4 @@ if __name__ == '__main__':
     df = pd.DataFrame(fl.training_set._dataset.inter_feat.numpy())
 
     # save output
-    df.to_csv('dataframe/ind_Pop_dataframe.csv', index = False)
+    df.to_csv('dataframe/uCF_dataframe.csv', index = False)
