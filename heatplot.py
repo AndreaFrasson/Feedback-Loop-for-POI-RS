@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import json
 
 
-MODEL = 'MultiVAE_cp'
+MODEL = 'uCF_cp'
 STEP = 10
 MAXIT = 10
 P = [1.0, 0.8, 0.5, 0.2, 0.0]

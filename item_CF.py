@@ -33,10 +33,6 @@ class iCF(Pop):
         train_users = torch.unique(self.dataset.inter_feat[self.USER_ID]).reshape(-1,1)
         m_train = sparse.csr_matrix(self.dataset.inter_matrix().T)
 
-        items = np.array(list(self.dataset.item_counter.keys())).reshape(-1,1)
-
-        inter_users = torch.unique(interaction[self.USER_ID]).reshape(-1,1)
-
         if dataset is not None:
             m_inter = sparse.csr_matrix(dataset.inter_matrix().T)
         else:
@@ -54,7 +50,7 @@ class iCF(Pop):
         avg_int_inter = np.nan_to_num(avg_int_inter, 0)
 
         # similarity matrix between each item in the test with each item in the train
-        sim_mat = 1 - pairwise_distances(m_inter, m_train, 'cosine')
+        sim_mat = 1 - pairwise_distances(m_train, m_inter, 'cosine')
         sim_mat = np.nan_to_num(sim_mat, 0)
 
         #sim_mat = torch.Tensor(sim_mat).to(self.device)
@@ -68,8 +64,6 @@ class iCF(Pop):
 
             ws = m[ne] - avg_int.reshape(-1,1)[ne]
 
-            print(ws)
-
             num = np.sum(sim_mat[item, ne] * ws, 0)
             den = np.sum(np.abs(sim_mat[item,ne]))
 
@@ -79,8 +73,8 @@ class iCF(Pop):
             return scores
 
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1), m = m_train, 
-                                   avg_int = avg_int_inter, sim_mat = sim_mat, neighbors = neighbors)
+        pred = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1), m = m_inter, 
+                                   avg_int = avg_int_train, sim_mat = sim_mat, neighbors = neighbors)
         pred = pred.T
         pred = np.nan_to_num(pred, 0)
         return torch.tensor(np.argsort(pred, 1)[users.flatten(), -10:] + 1)

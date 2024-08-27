@@ -58,7 +58,7 @@ class FeedBack_Loop():
     # Main Loop 
     # if not specified, the model uses default values, otherwise before going in the loop it performs
     # a random search to tune the hyperparameters (dataset splitted in train-val-test).  
-    def loop(self, epochs, len_step, k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2):
+    def loop(self, epochs, len_step, k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2, Nu = 7):
 
         self.epochs = epochs
         self.len_step = len_step
@@ -94,11 +94,11 @@ class FeedBack_Loop():
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 elif self.config_dict['model'] == 'uCF':
-                    self.model = uCF(self.config, self.dataset).to(self.config['device'])
+                    self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
 
                 elif self.config_dict['model'] == 'iCF':
-                    self.model = iCF(self.config, self.training_set.dataset).to(self.config['device'])
+                    self.model = iCF(self.config, self.training_set.dataset, N_u=Nu).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
