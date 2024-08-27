@@ -2,12 +2,11 @@ from preprocess import preprocess
 import os
 import sys
 from Feedback_Loop import FeedBack_Loop
-from item_CF import iCF
 import json
 import torch
 
 # SETTINGS
-MODEL = 'iCF'
+MODEL = 'itemKNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -43,6 +42,7 @@ if __name__ == '__main__':
             'epochs': EPOCHS,
             'use_gpu': len(DEVICE_ID) > 0,
             'gpu_id': DEVICE_ID,
+            'k':7
         }
 
     results = {}

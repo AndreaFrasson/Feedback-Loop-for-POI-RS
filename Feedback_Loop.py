@@ -14,7 +14,7 @@ from recbole.trainer import HyperTuning
 from ind_Random import ind_Random
 from ind_Pop import ind_Pop
 from user_CF import uCF
-from item_CF import iCF
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -51,8 +51,6 @@ class FeedBack_Loop():
         self.time_field = self.dataset.time_field
 
         self.training_set, self.validation_set, self.test_set = data_preparation(self.config, self.dataset)
-        self.adj_mat = pd.crosstab(self.training_set._dataset.inter_feat.numpy()[self.uid_field], 
-                                   self.training_set._dataset.inter_feat.numpy()[self.iid_field]).transpose()
     
 
     # Main Loop 
@@ -95,10 +93,6 @@ class FeedBack_Loop():
                 
                 elif self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set._dataset)
-
-                elif self.config_dict['model'] == 'iCF':
-                    self.model = iCF(self.config, self.training_set.dataset, N_u=Nu).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
