@@ -140,6 +140,33 @@ class FeedBack_Loop():
             self.update_incremental(chosen_items)
 
 
+        if self.config_dict['model'] == 'ind_Random':
+            self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
+            results = self.model.evaluate(self.test_set._dataset)
+
+        elif self.config_dict['model'] == 'ind_Pop':
+            self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
+            results = self.model.evaluate(self.test_set._dataset)
+        
+        elif self.config_dict['model'] == 'uCF':
+            self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
+            results = self.model.evaluate(self.test_set._dataset)
+        
+        else:
+            self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
+            # trainer loading and initialization
+            self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
+            # model training
+            best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+            results = self.trainer.evaluate(self.test_set)
+
+        self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
+        self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
+        self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
+        
+        self.compute_metrics(rec_predictions)
+
+
             
 
     # perform a fit step
