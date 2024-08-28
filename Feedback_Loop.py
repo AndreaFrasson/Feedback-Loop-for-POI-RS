@@ -175,7 +175,8 @@ class FeedBack_Loop():
 
         # get the score of every item
         input_inter = Interaction({
-            'uid': torch.tensor(users)
+            'uid': torch.tensor(users),
+            'item_id': self.training_set._dataset.inter_feat[self.iid_field]
         })
         #input_inter = self.dataset.join(input_inter)  # join user feature
     
@@ -189,7 +190,7 @@ class FeedBack_Loop():
                 # get feature in the interactions
                 raise NotImplementedError
             
-            if self.config_dict['model'] not in ['uCF', 'iCF', 'ind_Pop']:
+            if self.config_dict['model'] not in ['uCF', 'ind_Pop']:
                 scores = scores.view(-1, self.dataset.item_num)
                 # get the 10 items with highest scores
                 #rec_list = np.argsort(scores, axis = 1)[:, -10:]

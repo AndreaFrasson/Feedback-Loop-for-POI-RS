@@ -15,8 +15,6 @@ DEVICE_ID = '0'
 
 # Default parameters
 
-
-
 if __name__ == '__main__':
     # total arguments
     n = len(sys.argv)
