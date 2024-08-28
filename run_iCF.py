@@ -6,7 +6,7 @@ import json
 import torch
 
 # SETTINGS
-MODEL = 'itemKNN'
+MODEL = 'ItemKNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
