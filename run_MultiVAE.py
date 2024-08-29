@@ -9,7 +9,7 @@ MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
-EPOCHS = 20
+EPOCHS = 5
 DEVICE_ID = '0'
 
 # Default parameters
@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     results = {}
     
-    for i in range(4):
+    for i in range(3):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False, hyper_file = 'MultiVAE.hyper')
 
