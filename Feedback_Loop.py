@@ -98,6 +98,7 @@ class FeedBack_Loop():
                 
                 else:
                     self.config['learning_rate'] = self.alphas[int(c/10)]
+                    
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                     # trainer loading and initialization
                     self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)

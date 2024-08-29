@@ -8,7 +8,7 @@ import numpy as np
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'uCF'
+MODEL = 'ItemKNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
