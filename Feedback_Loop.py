@@ -96,7 +96,7 @@ class FeedBack_Loop():
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
-                    self.config['learning_rate'] = 0.03684084993750331
+                    self.config['learning_rate'] = 0.007445981808674969
                     
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                     # trainer loading and initialization
