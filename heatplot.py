@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import json
 
 
-MODEL = 'col_Pop_ip'
+MODEL = 'MultiVAE_cp'
 STEP = 10
 MAXIT = 10
 P = [1.0, 0.8, 0.5, 0.2, 0.0]
@@ -114,7 +114,7 @@ def main():
     #title = "Title"
     xlabel= "Epochs"
     ylabel="Acceptance Prob"
-    xticklabels = range(1, x_axis_size+1) # could be text
+    xticklabels = range(0, x_axis_size) # could be text
     yticklabels = ['0', '0.2', '0.5', '0.8', '1'] # could be text   
     #yticklabels = ['0.2', '0.5', '0.8'] # could be text   
     heatmap(means, '', xlabel, ylabel, xticklabels, yticklabels)
