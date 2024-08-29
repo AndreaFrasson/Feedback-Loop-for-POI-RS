@@ -27,7 +27,6 @@ class FeedBack_Loop():
     def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
         self.not_rec = not_rec
-        self.alphas = np.array([0.01258522, 0.06280506, 0.07182408, 0.0079019 , 0.04129772, 0.05274111, 0.08407374, 0.01003677, 0.0484427 , 0.05842023, 0.05510973])
 
         # if we build a custom model, it returns an error, intercept and build a generic pop model, but save the chosen
         # model for later
@@ -97,7 +96,7 @@ class FeedBack_Loop():
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
-                    self.config['learning_rate'] = self.alphas[int(c/10)]
+                    self.config['learning_rate'] = 0.03684084993750331
                     
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                     # trainer loading and initialization
