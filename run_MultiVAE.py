@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     results = {}
     
-    for i in range(3):
+    for i in range(5):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False, hyper_file = 'MultiVAE.hyper')
 
