@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     results = {}
     
-    for i in range(4):
+    for i in range(2):
         fl = FeedBack_Loop(config_dict, not_rec)
         fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False)
 
