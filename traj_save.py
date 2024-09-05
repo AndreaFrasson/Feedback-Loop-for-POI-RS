@@ -8,7 +8,7 @@ import numpy as np
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'ItemKNN'
+MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -16,7 +16,7 @@ EPOCHS = 20
 DEVICE_ID = '0'
 
 # Default parameters
-LEARNING_RATE = 0.005
+LEARNING_RATE = 0.007445981808674969
 
 
 
@@ -57,4 +57,4 @@ if __name__ == '__main__':
     df = pd.DataFrame(fl.training_set._dataset.inter_feat.numpy())
 
     # save output
-    df.to_csv('dataframe/uCF_dataframe.csv', index = False)
+    df.to_csv('dataframe/multivae.csv', index = False)
