@@ -234,7 +234,14 @@ class FeedBack_Loop():
     def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active, k = 0.3):
         # percentuale utenti che non seguono il recommender
 
-        choices = np.apply_along_axis(np.random.choice, 1, recommender_pred, size = 1).flatten()
+        def prop_choice(reccs):
+            p = [1/(i+1) for i in range(len(reccs))]
+            p = np.array(p) / sum(p)
+
+            return np.random.choice(reccs, 1, p = p)
+
+
+        choices = np.apply_along_axis(prop_choice, 1, recommender_pred).flatten()
 
         for i in range(len(choices)):
             if choices[i] >= 0:
