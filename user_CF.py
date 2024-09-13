@@ -70,11 +70,11 @@ class uCF(Pop):
             np.nan_to_num(scores, 0)
 
             pos = np.argsort(scores)[-10:]# return the item not visited with highest scores
-            return pos
+            return scores
 
-        pred = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1),
+        scores = np.apply_along_axis(get_pred_cf, 1, arr = np.array(range(neighbors.shape[0])).reshape(-1,1),
                                     m = m_train, avg_int = avg_int_train, sim_mat = sim_mat, neighbors = neighbors)
-        return torch.tensor(pred)
+        return torch.tensor(scores)
     
 
     def evaluate(self, dataset):

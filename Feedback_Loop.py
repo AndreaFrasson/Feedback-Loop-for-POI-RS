@@ -128,13 +128,13 @@ class FeedBack_Loop():
                 rows_not_active = None
 
             #recommender choices
-            rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+            rec_scores, rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
             
             # not recommender choices
             not_rec_predictions = self.generate_not_rec_predictions()
             
             # choose one item
-            chosen_items = self.choose_items(rec_predictions, not_rec_predictions, rows_not_active, k)
+            chosen_items = self.choose_items(rec_predictions, rec_scores, not_rec_predictions, rows_not_active, k)
                 
             if c % self.len_step == 0:
                 self.compute_metrics(rec_predictions) # compute metrics before the effect of the new model
@@ -187,12 +187,13 @@ class FeedBack_Loop():
     def generate_prediction(self, dataset, row_not_active = None):
 
         torch.cuda.empty_cache()
-        scores = self.__prediction()
+        scores, topk_iid_list = self.__prediction()
 
         if row_not_active is not None:
             scores[row_not_active] = -1
+            topk_iid_list[row_not_active] = -1
 
-        return scores
+        return scores, topk_iid_list
     
 
     # given a list of users, a matrix of items visited, and the model make the prediction for each user.
@@ -219,29 +220,27 @@ class FeedBack_Loop():
                 # get feature in the interactions
                 raise NotImplementedError
             
-            if self.config_dict['model'] not in ['uCF', 'ind_Pop']:
+            if self.config_dict['model'] not in ['ind_Pop']:
                 scores = scores.view(-1, self.dataset.item_num)
                 # get the 10 items with highest scores
                 #rec_list = np.argsort(scores, axis = 1)[:, -10:]
                 topk_score, topk_iid_list  = torch.topk(scores, 10)
 
-                return topk_iid_list.numpy().flatten().reshape(-1,10)
+                return topk_score.numpy().flatten().reshape(-1,10), topk_iid_list.numpy().flatten().reshape(-1,10)
         
         return scores.numpy()
     
     
 
-    def choose_items(self, recommender_pred, not_recommender_pred, rows_not_active, k = 0.3):
-        # percentuale utenti che non seguono il recommender
+    def choose_items(self, recommender_pred, rec_scores, not_recommender_pred, rows_not_active, k = 0.3):
+        choices = []
 
-        def prop_choice(reccs):
-            p = [1/(i+1) for i in range(len(reccs))]
-            p = np.array(p) / sum(p)
-
-            return np.random.choice(reccs, 1, p = p)
-
-
-        choices = np.apply_along_axis(prop_choice, 1, recommender_pred).flatten()
+        for i in range(len(recommender_pred)):
+            if sum(rec_scores[i]) > 0:
+                p = np.abs(rec_scores[i]) / np.abs(sum(rec_scores[i]))
+                choices.append(np.random.choice(recommender_pred[i], 1, p = p))
+            else:
+                choices.append(-1)
 
         for i in range(len(choices)):
             if choices[i] >= 0:
@@ -414,7 +413,7 @@ class FeedBack_Loop():
 
             case 'ip': # individual popularity
                 ind_pop_items = np.apply_along_axis(np.argsort, 1, m) # top-k items for each user
-                return np.apply_along_axis(np.random.choice, 1, ind_pop_items) # choose one item per user
+                return np.apply_along_axis(np.random.choice, 1, ind_pop_items[:, -10:]) # choose one item per user
 
 
             case 'cp': # collective popularity (most popular items)
