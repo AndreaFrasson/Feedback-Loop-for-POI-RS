@@ -202,7 +202,6 @@ class FeedBack_Loop():
 
         users = torch.unique(self.training_set._dataset.inter_feat[self.uid_field])
 
-
         # get the score of every item
         input_inter = Interaction({
             'uid': torch.tensor(users),
@@ -237,7 +236,9 @@ class FeedBack_Loop():
 
         for i in range(len(recommender_pred)):
             if sum(rec_scores[i]) > 0:
-                p = np.abs(rec_scores[i]) / np.abs(sum(rec_scores[i]))
+                # Option 2: Shift all values to be positive (if keeping negatives)
+                shifted_values = np.array(rec_scores[i]) + abs(min(rec_scores[i])) + 0.01
+                p = np.abs(shifted_values) / np.abs(sum(shifted_values))
                 choices.append(np.random.choice(recommender_pred[i], 1, p = p))
             else:
                 choices.append(-1)
