@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import json
 
 
-MODEL = 'ind_Pop_ir'
+#MODEL = 'MultiVAE_ir'
 STEP = 10
 MAXIT = 10
 P = [1.0, 0.8, 0.5, 0.2, 0.0]
@@ -56,13 +56,13 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels):
 
     # set tick labels
     #ax.set_xticklabels(np.arange(1,AUC.shape[1]+1), minor=False)
-    ax.set_xticklabels(xticklabels, minor=False)
-    ax.set_yticklabels(yticklabels, minor=False)
+    ax.set_xticklabels(xticklabels, minor=False, size = 15)
+    ax.set_yticklabels(yticklabels, minor=False, size = 15)
 
     # set title and x/y labels
-    plt.title(title)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)      
+    plt.title(title, size = 30)
+    plt.xlabel(xlabel, size = 20)
+    plt.ylabel(ylabel, size = 20)      
 
     # Remove last blank column
     plt.xlim( (0, AUC.shape[1]) )
@@ -84,11 +84,13 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels):
 
     # resize 
     fig = plt.gcf()
-    fig.set_size_inches(cm2inch(90, 7))
+    fig.set_size_inches(cm2inch(30, 10))
+
+    return fig
 
 
 
-def main():
+def main(MODEL = 'MultiVAE_ir'):
 
     timeseries = []
 
@@ -117,9 +119,12 @@ def main():
     xticklabels = range(0, x_axis_size) # could be text
     yticklabels = ['0', '0.2', '0.5', '0.8', '1'] # could be text   
     #yticklabels = ['0.2', '0.5', '0.8'] # could be text   
-    heatmap(means, '', xlabel, ylabel, xticklabels, yticklabels)
-    #plt.savefig('image_output.png', dpi=300, format='png', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
-    plt.show()
+    
+    #plt.savefig('pdfplot/Diversity_'+MODEL+'.pdf', bbox_inches='tight') # use format='svg' or 'pdf' for vectorial pictures
+    #plt.show()
+    a = heatmap(means, '', xlabel, ylabel, xticklabels, yticklabels)
+
+    return a
 
 
 if __name__ == "__main__":
