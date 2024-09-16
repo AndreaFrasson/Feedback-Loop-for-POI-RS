@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'iCF'
+MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -79,18 +79,21 @@ if __name__ == '__main__':
 
     else:
         rows_not_active = None
+    
+    rows_not_active = None
 
     #recommender choices
     rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
 
     output = []
-    output.append(list(rec_predictions))
+    #output.append(list(rec_predictions))
 
     print(1)
 
     for i in range(len_step):
         #recommender choices
         rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+        output.append(list(rec_predictions))
         
         # not recommender choices
         not_rec_predictions = fl.generate_not_rec_predictions()
@@ -101,13 +104,14 @@ if __name__ == '__main__':
         fl.update_incremental(chosen_items)
     
     rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-    output.append(list(rec_predictions))
+    #output.append(list(rec_predictions))
 
     print(2)
 
     for i in range(len_step):
         #recommender choices
         rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+        output.append(list(rec_predictions))
         
         # not recommender choices
         not_rec_predictions = fl.generate_not_rec_predictions()
@@ -118,7 +122,7 @@ if __name__ == '__main__':
         fl.update_incremental(chosen_items)
     
     rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-    output.append(list(rec_predictions))
+    #output.append(list(rec_predictions))
 
     # save output
 
