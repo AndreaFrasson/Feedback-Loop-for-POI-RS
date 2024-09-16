@@ -5,10 +5,12 @@ from Feedback_Loop import FeedBack_Loop
 import json
 import pandas as pd
 import numpy as np
+import pickle
+from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'MultiVAE'
+MODEL = 'iCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     n = len(sys.argv)
     if n < 5:
         len_step = 5
-        epochs = 20
+        epochs = 2
     else:
         len_step = int(sys.argv[1])
         epochs = int(sys.argv[2])
@@ -51,10 +53,74 @@ if __name__ == '__main__':
 
     results = {}
     
-    fl = FeedBack_Loop(config_dict, not_rec)
-    fl.loop(epochs, len_step, k = k, user_frac=0, tuning=False, hyper_file = 'MultiVAE.hyper')
+    fl = FeedBack_Loop(config_dict, 'cp')
+    fl.initialize()
 
-    df = pd.DataFrame(fl.training_set._dataset.inter_feat.numpy())
+
+    user_frac = 0.2
+    fl.config['learning_rate'] = 0.007445981808674969
+    
+    fl.model = get_model(fl.config['model'])(fl.config, fl.training_set._dataset).to(fl.config['device'])
+    # trainer loading and initialization
+    fl.trainer = get_trainer(fl.config['MODEL_TYPE'], fl.config_dict['model'])(fl.config, fl.model)
+    # model training
+    best_valid_score, best_valid_result = fl.trainer.fit(fl.training_set, fl.validation_set)
+
+    if user_frac < 1:
+                
+        users = list(fl.training_set._dataset.user_counter.keys())
+        user_num = len(users) / len_step
+
+        np.random.seed()
+        user_not_active = np.random.choice(users,
+                                    int(user_num)) 
+        
+        rows_not_active = user_not_active - 1 
+
+    else:
+        rows_not_active = None
+
+    #recommender choices
+    rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+
+    output = []
+    output.append(list(rec_predictions))
+
+    print(1)
+
+    for i in range(len_step):
+        #recommender choices
+        rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+        
+        # not recommender choices
+        not_rec_predictions = fl.generate_not_rec_predictions()
+        
+        # choose one item
+        chosen_items = fl.choose_items(rec_predictions, rec_scores, not_rec_predictions, rows_not_active, 0.5)
+
+        fl.update_incremental(chosen_items)
+    
+    rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+    output.append(list(rec_predictions))
+
+    print(2)
+
+    for i in range(len_step):
+        #recommender choices
+        rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+        
+        # not recommender choices
+        not_rec_predictions = fl.generate_not_rec_predictions()
+        
+        # choose one item
+        chosen_items = fl.choose_items(rec_predictions, rec_scores, not_rec_predictions, rows_not_active, 0.5)
+
+        fl.update_incremental(chosen_items)
+    
+    rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+    output.append(list(rec_predictions))
 
     # save output
-    df.to_csv('dataframe/multivae.csv', index = False)
+
+    with open('dataframe/'+MODEL, 'wb') as fp:
+        pickle.dump(output, fp)
