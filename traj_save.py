@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'MulitVAE'
+MODEL = 'iCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -90,6 +90,7 @@ if __name__ == '__main__':
 
 
     for j in range(5):
+        print(j)
 
         for i in range(len_step):
             #recommender choices
