@@ -114,8 +114,8 @@ if __name__ == '__main__':
         best_valid_score, best_valid_result = fl.trainer.fit(fl.training_set, fl.validation_set)
 
 
-    rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-    output.append(list(rec_predictions))
+        rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
+        output.append(list(rec_predictions))
 
     # save output
 
