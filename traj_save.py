@@ -122,3 +122,5 @@ if __name__ == '__main__':
 
     with open('dataframe/'+MODEL, 'wb') as fp:
         pickle.dump(output, fp)
+    
+    pd.DataFrame(fl.training_set._dataset.inter_feat.numpy()).to_csv('dataframe/'+MODEL+'.csv')
