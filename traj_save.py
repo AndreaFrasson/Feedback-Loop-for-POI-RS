@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'Pop'
+MODEL = 'uCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -90,35 +90,7 @@ if __name__ == '__main__':
     output = []
     #output.append(list(rec_predictions))
 
-
-    for j in range(5):
-        print(j)
-
-        for i in range(len_step):
-            #recommender choices
-            rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-            #output.append(list(rec_predictions))
-            
-            # not recommender choices
-            not_rec_predictions = fl.generate_not_rec_predictions()
-            
-            # choose one item
-            chosen_items = fl.choose_items(rec_predictions, rec_scores, not_rec_predictions, rows_not_active, 0.5)
-
-            fl.update_incremental(chosen_items)
-        
-        rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-        output.append(list(rec_predictions))
-
-        fl.model = get_model(fl.config['model'])(fl.config, fl.training_set._dataset).to(fl.config['device'])
-        # trainer loading and initialization
-        fl.trainer = get_trainer(fl.config['MODEL_TYPE'], fl.config_dict['model'])(fl.config, fl.model)
-        # model training
-        best_valid_score, best_valid_result = fl.trainer.fit(fl.training_set, fl.validation_set)
-
-
-        rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
-        output.append(list(rec_predictions))
+    fl.loop(5, 5, k = 0.8, user_frac=1, tuning=False)
 
     # save output
 
