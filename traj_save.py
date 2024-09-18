@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'uCF'
+MODEL = 'MultiVAE'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     fl.initialize()
 
 
-    user_frac = 0.2
+    user_frac = 1.5
     fl.config['learning_rate'] = 0.007445981808674969
     
     fl.model = get_model(fl.config['model'])(fl.config, fl.training_set._dataset).to(fl.config['device'])
@@ -65,6 +65,8 @@ if __name__ == '__main__':
     fl.trainer = get_trainer(fl.config['MODEL_TYPE'], fl.config_dict['model'])(fl.config, fl.model)
     # model training
     best_valid_score, best_valid_result = fl.trainer.fit(fl.training_set, fl.validation_set)
+
+    print(fl.config['model'])
 
     if user_frac < 1:
                 
