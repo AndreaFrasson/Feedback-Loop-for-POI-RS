@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'MultiVAE'
+MODEL = 'uCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
