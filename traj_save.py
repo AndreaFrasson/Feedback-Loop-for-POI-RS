@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'uCF'
+MODEL = 'ItemKNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -60,11 +60,11 @@ if __name__ == '__main__':
     output = []
     #output.append(list(rec_predictions))
 
-    fl.loop(5, 5, k = 0.8, user_frac=1.5, tuning=False)
+    fl.loop(5, 5, k = 0.2, user_frac=1.5, tuning=False)
 
     # save output
 
-    with open('dataframe/'+MODEL, 'wb') as fp:
+    with open('dataframe/'+MODEL+'_'+str(0.2), 'wb') as fp:
         pickle.dump(fl.sugg, fp)
     
-    pd.DataFrame(fl.training_set._dataset.inter_feat.numpy()).to_csv('dataframe/'+MODEL+'.csv')
+    pd.DataFrame(fl.training_set._dataset.inter_feat.numpy()).to_csv('dataframe/'+MODEL+'_'+str(0.2)+'.csv')
