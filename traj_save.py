@@ -54,43 +54,13 @@ if __name__ == '__main__':
     results = {}
     
     fl = FeedBack_Loop(config_dict, 'cp')
-    fl.initialize()
-
-
-    user_frac = 1.5
-    fl.config['learning_rate'] = 0.007445981808674969
-    
-    fl.model = get_model(fl.config['model'])(fl.config, fl.training_set._dataset).to(fl.config['device'])
-    # trainer loading and initialization
-    fl.trainer = get_trainer(fl.config['MODEL_TYPE'], fl.config_dict['model'])(fl.config, fl.model)
-    # model training
-    best_valid_score, best_valid_result = fl.trainer.fit(fl.training_set, fl.validation_set)
-
-    print(fl.config['model'])
-
-    if user_frac < 1:
-                
-        users = list(fl.training_set._dataset.user_counter.keys())
-        user_num = len(users) / len_step
-
-        np.random.seed()
-        user_not_active = np.random.choice(users,
-                                    int(user_num)) 
-        
-        rows_not_active = user_not_active - 1 
-
-    else:
-        rows_not_active = None
     
     rows_not_active = None
-
-    #recommender choices
-    rec_scores, rec_predictions = fl.generate_prediction(fl.training_set._dataset, rows_not_active)
 
     output = []
     #output.append(list(rec_predictions))
 
-    fl.loop(5, 5, k = 0.8, user_frac=1, tuning=False)
+    fl.loop(5, 5, k = 0.8, user_frac=1.5, tuning=False)
 
     # save output
 

@@ -58,6 +58,8 @@ class FeedBack_Loop():
     # a random search to tune the hyperparameters (dataset splitted in train-val-test).  
     def loop(self, epochs, len_step, k = 0.3, tuning = False, hyper_file = None, user_frac = 0.2, Nu = 7):
 
+        self.sugg = []
+
         self.epochs = epochs
         self.len_step = len_step
         self.metrics = {}
@@ -108,7 +110,6 @@ class FeedBack_Loop():
                 self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
                 self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
-                
             
             
             
@@ -129,6 +130,8 @@ class FeedBack_Loop():
 
             #recommender choices
             rec_scores, rec_predictions = self.generate_prediction(self.training_set._dataset, rows_not_active)
+
+            self.sugg.append(rec_predictions)
             
             # not recommender choices
             not_rec_predictions = self.generate_not_rec_predictions()
@@ -350,8 +353,10 @@ class FeedBack_Loop():
 
     def compute_metrics(self, recommended_items):
 
+        L_col = len(set(recommended_items.flatten())) - 1
+
         # distinct items proposed (collective)
-        self.metrics['L_col'] = self.metrics.get('L_col', []) + [len(set(recommended_items.flatten())) - 1] # -1 is padding value, not considered
+        self.metrics['L_col'] = self.metrics.get('L_col', []) + [L_col] # -1 is padding value, not considered
 
         # radius of gyration (individual)
         rog = metrics.compute_rog(self.training_set._dataset)['radius_of_gyration']
