@@ -60,11 +60,11 @@ if __name__ == '__main__':
     output = []
     #output.append(list(rec_predictions))
 
-    fl.loop(10, 20, k = 0.8, user_frac=1.5, tuning=False)
+    fl.loop(30, 10, k = 0.5, user_frac=1.5, tuning=False)
 
     # save output
 
-    with open('dataframe/'+MODEL+'_'+str(0.8), 'wb') as fp:
+    with open('dataframe/'+MODEL+'_'+str(0.5), 'wb') as fp:
         pickle.dump(fl.sugg, fp)
     
-    pd.DataFrame(fl.training_set._dataset.inter_feat.numpy()).to_csv('dataframe/'+MODEL+'_'+str(0.8)+'.csv')
+    pd.DataFrame(fl.training_set._dataset.inter_feat.numpy()).to_csv('dataframe/'+MODEL+'_'+str(0.5)+'.csv')
