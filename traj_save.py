@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'ItemKNN'
+MODEL = 'uCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     output = []
     #output.append(list(rec_predictions))
 
-    fl.loop(5, 5, k = 0.2, user_frac=1.5, tuning=False)
+    fl.loop(10, 20, k = 0.2, user_frac=1.5, tuning=False)
 
     # save output
 
