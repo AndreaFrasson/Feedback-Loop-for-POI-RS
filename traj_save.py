@@ -10,7 +10,7 @@ from recbole.quick_start.quick_start import get_model, get_trainer
 
 
 # SETTINGS GENERAL RECOMMENDER
-MODEL = 'uCF'
+MODEL = 'iCF'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
@@ -53,14 +53,14 @@ if __name__ == '__main__':
 
     results = {}
     
-    fl = FeedBack_Loop(config_dict, 'cp')
+    fl = FeedBack_Loop(config_dict, 'ip')
     
     rows_not_active = None
 
     output = []
     #output.append(list(rec_predictions))
 
-    fl.loop(10, 10, k = 0.8, user_frac=1.5, tuning=False)
+    fl.loop(10, 10, k = 0.5, user_frac=1.5, tuning=False)
 
     # save output
 
