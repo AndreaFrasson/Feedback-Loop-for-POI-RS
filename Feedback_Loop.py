@@ -11,10 +11,9 @@ import torch
 import copy
 from recbole.data import Interaction
 from recbole.trainer import HyperTuning
-from ind_Random import ind_Random
-from ind_Pop import ind_Pop
 from user_CF import uCF
 
+# Class to simulate the Feedback Loop for a dataset and a Recommender Systems
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,7 +22,7 @@ class FeedBack_Loop():
 
     # initialiazation of the class Feedback loop
     # save the original configuration and the 'control strategy' (what and individual does if 
-    # he/she doesn't follow the recommender)
+    # they do not follow the recommender)
     def __init__(self, config_dict, not_rec = 'ir'):
         self.config_dict = config_dict
         self.not_rec = not_rec
@@ -77,7 +76,7 @@ class FeedBack_Loop():
         #   n = 0
         #   while n < simulation_steps:
         #     ....
-        # iterations is a variable to save the total number of iterations to use a single for
+        # iterations is a variable to save the total number of iterations to use a single loop
         iterations = self.epochs * self.len_step
 
         for c in tqdm(range(iterations)):
@@ -85,20 +84,13 @@ class FeedBack_Loop():
             # every len_step epochs, retrain of the model
             if c % self.len_step == 0:
                 # get model
-                if self.config_dict['model'] == 'ind_Random':
-                    self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set._dataset)
-
-                elif self.config_dict['model'] == 'ind_Pop':
-                    self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set._dataset)
-                
-                elif self.config_dict['model'] == 'uCF':
+                if self.config_dict['model'] == 'uCF':
                     self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
                     results = self.model.evaluate(self.test_set._dataset)
                 
                 else:
-                    self.config['learning_rate'] = 0.017445981808674969
+                    # Fixed learning rate for repeatable results
+                    # self.config['learning_rate'] = 0.017445981808674969
                     
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
                     # trainer loading and initialization
@@ -145,15 +137,7 @@ class FeedBack_Loop():
             self.update_incremental(chosen_items)
 
 
-        if self.config_dict['model'] == 'ind_Random':
-            self.model = ind_Random(self.config, self.dataset).to(self.config['device'])
-            results = self.model.evaluate(self.test_set._dataset)
-
-        elif self.config_dict['model'] == 'ind_Pop':
-            self.model = ind_Pop(self.config, self.dataset).to(self.config['device'])
-            results = self.model.evaluate(self.test_set._dataset)
-        
-        elif self.config_dict['model'] == 'uCF':
+        if self.config_dict['model'] == 'uCF':
             self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
             results = self.model.evaluate(self.test_set._dataset)
         
@@ -395,6 +379,12 @@ class FeedBack_Loop():
 
 
 
+# Generate predictions using the alternative policies.
+# Four different strategies are currently implemented:
+#   - Collective POPularity: suggest the 10 most popular items
+#   - Collective RANDom: suggest 10 randomly sampled items
+#   - Individual POPularity: for each user, suggest the 10 most interacted items
+#   - Individual RANDom: for each user, suggest 10 items sampled from their history
     def generate_not_rec_predictions(self):
 
         np.random.seed()

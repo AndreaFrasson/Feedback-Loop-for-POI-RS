@@ -4,6 +4,8 @@ from sklearn.preprocessing import LabelEncoder
 import pickle
 import os
 
+# Script to open the foursquare dataset and build the atomic
+# files needed by RecBole to train Recommender Systems.
 
 def preprocess(seed = 1234):
     np.random.seed(seed)
@@ -73,7 +75,7 @@ def preprocess(seed = 1234):
 
     #users
     pd.DataFrame(set(foursquare['uid:token']), columns=['uid:token']).to_csv('foursquare/foursquare.user', index=False, sep = ',')
-    #items
+    #items -- POIs
     items = foursquare[['item_id:token', 'venue_category_name:token', 'lat:float', 'lon:float']].drop_duplicates(subset=['item_id:token'])
     items.sort_values(by = 'item_id:token', inplace=True)
     items.to_csv('foursquare/foursquare.item', index = False, sep = ',')
