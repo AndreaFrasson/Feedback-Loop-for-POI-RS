@@ -12,6 +12,7 @@ import copy
 from recbole.data import Interaction
 from recbole.trainer import HyperTuning
 from user_CF import uCF
+import UserKNN 
 
 # Class to simulate the Feedback Loop for a dataset and a Recommender Systems
 
@@ -24,19 +25,20 @@ class FeedBack_Loop():
     # save the original configuration and the 'control strategy' (what and individual does if 
     # they do not follow the recommender)
     def __init__(self, config_dict, not_rec = 'ir'):
-        self.config_dict = config_dict
+        self.config_dict = copy.copy(config_dict)
         self.not_rec = not_rec
 
         # if we build a custom model, it returns an error, intercept and build a generic pop model, but save the chosen
         # model for later
-        try: 
+        try:
             self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
 
         except:
-            my_model = copy.copy(self.config_dict['model'])
-            self.config_dict['model'] = 'Pop'
-            self.config = Config(config_file_list=['environment.yaml'], config_dict = config_dict)
-            self.config_dict['model'] = my_model
+            custom_model = copy.copy(self.config_dict['model'])
+            self.config_dict['model'] = 'ItemKNN'
+            self.config = Config(config_file_list=['environment.yaml'], config_dict = self.config_dict)
+            self.config_dict['model'] = custom_model
+
             
 
 
@@ -84,20 +86,18 @@ class FeedBack_Loop():
             # every len_step epochs, retrain of the model
             if c % self.len_step == 0:
                 # get model
-                if self.config_dict['model'] == 'uCF':
-                    self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
-                    results = self.model.evaluate(self.test_set._dataset)
-                
+                if self.config_dict['model'] == 'UserKNN':
+                    self.model = UserKNN.ItemKNN(self.config, self.dataset,).to(self.config['device'])
                 else:
                     # Fixed learning rate for repeatable results
                     # self.config['learning_rate'] = 0.017445981808674969
-                    
                     self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
-                    # trainer loading and initialization
-                    self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
-                    # model training
-                    best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-                    results = self.trainer.evaluate(self.test_set)
+
+                # trainer loading and initialization
+                self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
+                # model training
+                best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+                results = self.trainer.evaluate(self.test_set)
 
                 self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
                 self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
@@ -137,24 +137,24 @@ class FeedBack_Loop():
             self.update_incremental(chosen_items)
 
 
-        if self.config_dict['model'] == 'uCF':
-            self.model = uCF(self.config, self.dataset, N_u = Nu).to(self.config['device'])
-            results = self.model.evaluate(self.test_set._dataset)
-        
+        if self.config_dict['model'] == 'UserKNN':
+            self.model = UserKNN.ItemKNN(self.config, self.dataset,).to(self.config['device'])
         else:
+            # Fixed learning rate for repeatable results
+            # self.config['learning_rate'] = 0.017445981808674969
             self.model = get_model(self.config['model'])(self.config, self.training_set._dataset).to(self.config['device'])
-            # trainer loading and initialization
-            self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
-            # model training
-            best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
-            results = self.trainer.evaluate(self.test_set)
+
+        # trainer loading and initialization
+        self.trainer = get_trainer(self.config['MODEL_TYPE'], self.config_dict['model'])(self.config, self.model)
+        # model training
+        best_valid_score, best_valid_result = self.trainer.fit(self.training_set, self.validation_set)
+        results = self.trainer.evaluate(self.test_set)
 
         self.metrics['test_hit'] = self.metrics.get('test_hit', []) + [results['hit@10']]
         self.metrics['test_precision'] = self.metrics.get('test_precision', []) + [results['precision@10']]
         self.metrics['test_rec'] = self.metrics.get('test_rec', []) + [results['recall@10']]
         
         self.compute_metrics(rec_predictions)
-
 
             
 
