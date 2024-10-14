@@ -7,7 +7,7 @@ import json
 import torch
 
 # SETTINGS
-MODEL = 'uCF'
+MODEL = 'UserKNN'
 DATA_PATH = os.getcwd() 
 TOP_K = 10
 DATASET = 'foursquare'
