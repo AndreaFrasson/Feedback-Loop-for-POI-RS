@@ -165,7 +165,7 @@ class ItemKNN(GeneralRecommender):
         _, self.w = ComputeSimilarity(
             self.interaction_matrix, topk=self.k, shrink=self.shrink
         ).compute_similarity("user")
-        self.pred_mat = self.w.T.dot(self.interaction_matrix).tolil()
+        self.pred_mat = self.w.dot(self.interaction_matrix).tolil()
 
         self.fake_loss = torch.nn.Parameter(torch.zeros(1))
         self.other_parameter_name = ["w", "pred_mat"]
